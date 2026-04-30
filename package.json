@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "init-sheets": "npx ts-node --project tsconfig.json scripts/init-sheets.ts"
+    "init-sheets": "npx ts-node --project tsconfig.json scripts/init-sheets.ts",
+    "create-admin": "npx ts-node --project tsconfig.json scripts/create-admin.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
