@@ -6,13 +6,15 @@ import ReservationModal from '@/components/reservation/ReservationModal';
 import ConflictModal from '@/components/reservation/ConflictModal';
 import { useTimetable } from '@/hooks/useTimetable';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import type { Reservation } from '@/types';
 
 export default function TimetablePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const month = format(currentDate, 'yyyy-MM');
   const { days, periods, loading, getReservation, reload } = useTimetable(month);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
   const [selectedCell, setSelectedCell] = useState<{ date: string; periodId: string; periodName: string } | null>(null);
   const [conflict, setConflict] = useState<{ info: Reservation; date: string; periodId: string } | null>(null);
@@ -65,7 +67,10 @@ export default function TimetablePage() {
     <div className="min-h-screen bg-[#FDF6F0]">
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <h1 className="text-lg font-bold text-[#333]">LibraBook</h1>
-        {user && <span className="text-sm text-gray-600">{user.name} ({user.role === 'teacher' ? '선생님' : user.role === 'student' ? '학생' : '관리자'})</span>}
+        <div className="flex items-center gap-4">
+          {user && <span className="text-sm text-gray-600">{user.name} ({user.role === 'teacher' ? '선생님' : user.role === 'student' ? '학생' : '관리자'})</span>}
+          <button onClick={async () => { await logout(); router.push('/login'); }} className="text-sm text-gray-500 hover:text-red-500 transition-colors">로그아웃</button>
+        </div>
       </header>
       <main className="p-6">
         <div className="flex items-center justify-between mb-6">
