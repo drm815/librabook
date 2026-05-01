@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSheetData, appendRow } from '@/lib/sheets';
+import { supabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
-import { generateId } from '@/lib/utils';
 import type { Seat } from '@/types';
 
-function rowToSeat(row: string[]): Seat {
-  return { id: row[0], row: Number(row[1]), col: Number(row[2]), label: row[3], isActive: row[4] === 'true' };
-}
-
 export async function GET() {
-  const rows = await getSheetData('seats');
-  return NextResponse.json(rows.slice(1).filter(r => r[4] === 'true').map(rowToSeat));
+  const { data, error } = await supabase
+    .from('seats')
+    .select('*')
+    .eq('is_active', true)
+    .order('row', { ascending: true })
+    .order('col', { ascending: true });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json(
+    (data ?? []).map(r => ({ id: r.id, row: r.row, col: r.col, label: r.label, isActive: r.is_active }))
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -18,9 +23,12 @@ export async function POST(req: NextRequest) {
   if (!session || session.role !== 'admin') {
     return NextResponse.json({ error: '권한 없음' }, { status: 403 });
   }
+
   const seats: Omit<Seat, 'id'>[] = await req.json();
-  for (const seat of seats) {
-    await appendRow('seats', [generateId(), String(seat.row), String(seat.col), seat.label, String(seat.isActive)]);
-  }
+  const { error } = await supabase.from('seats').insert(
+    seats.map(s => ({ row: s.row, col: s.col, label: s.label, is_active: s.isActive }))
+  );
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

@@ -1,20 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSheetData, appendRow } from '@/lib/sheets';
+import { supabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
-import { generateId, getCurrentKSTDate, isStudentReservationAllowed } from '@/lib/utils';
-import type { SeatReservation } from '@/types';
-
-function rowToSeatRes(row: string[]): SeatReservation {
-  return { id: row[0], date: row[1], seatId: row[2], studentId: row[3], purpose: row[4], status: row[5] as SeatReservation['status'], createdAt: row[6] };
-}
+import { getCurrentKSTDate, isStudentReservationAllowed } from '@/lib/utils';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const date = searchParams.get('date') ?? getCurrentKSTDate();
   const session = await getSession();
 
-  const rows = await getSheetData('seat_reservations');
-  const reservations = rows.slice(1).map(rowToSeatRes).filter(r => r.date === date && r.status !== 'cancelled');
+  const { data, error } = await supabase
+    .from('seat_reservations')
+    .select('*')
+    .eq('date', date)
+    .neq('status', 'cancelled');
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const reservations = (data ?? []).map(r => ({
+    id: r.id,
+    date: r.date,
+    seatId: r.seat_id,
+    studentId: r.student_id,
+    purpose: r.purpose,
+    status: r.status,
+    createdAt: r.created_at,
+  }));
 
   if (!session || session.role === 'student') {
     return NextResponse.json(reservations.map(r => ({ id: r.id, seatId: r.seatId, date: r.date })));
@@ -34,17 +44,30 @@ export async function POST(req: NextRequest) {
   const { seatId, purpose }: { seatId: string; purpose: string } = await req.json();
   const today = getCurrentKSTDate();
 
-  const rows = await getSheetData('seat_reservations');
-  const todayReservations = rows.slice(1).map(rowToSeatRes).filter(r => r.date === today && r.status !== 'cancelled');
+  const { data: todayReservations, error: fetchError } = await supabase
+    .from('seat_reservations')
+    .select('student_id, seat_id')
+    .eq('date', today)
+    .neq('status', 'cancelled');
 
-  if (todayReservations.some(r => r.studentId === session.userId)) {
+  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 });
+
+  if ((todayReservations ?? []).some(r => r.student_id === session.userId)) {
     return NextResponse.json({ error: '당일 좌석은 1개만 예약 가능합니다.' }, { status: 400 });
   }
-  if (todayReservations.some(r => r.seatId === seatId)) {
+  if ((todayReservations ?? []).some(r => r.seat_id === seatId)) {
     return NextResponse.json({ error: '이미 예약된 좌석입니다.' }, { status: 409 });
   }
 
-  const now = new Date().toISOString();
-  await appendRow('seat_reservations', [generateId(), today, seatId, session.userId, purpose, 'confirmed', now]);
+  const { error } = await supabase.from('seat_reservations').insert({
+    date: today,
+    seat_id: seatId,
+    student_id: session.userId,
+    purpose,
+    status: 'confirmed',
+    created_at: new Date().toISOString(),
+  });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }
