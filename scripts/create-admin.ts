@@ -1,24 +1,25 @@
 import bcrypt from 'bcryptjs';
-import { google } from 'googleapis';
+import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 async function main() {
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   const passwordHash = await bcrypt.hash('admin1234', 10);
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    },
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  const { error } = await supabase.from('users').insert({
+    name: '관리자',
+    role: 'admin',
+    password_hash: passwordHash,
   });
-  const sheets = google.sheets({ version: 'v4', auth });
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID!,
-    range: 'users',
-    valueInputOption: 'RAW',
-    requestBody: { values: [['admin-001', '관리자', 'admin', '', '', passwordHash, new Date().toISOString()]] },
-  });
+
+  if (error) {
+    console.error('오류:', error.message);
+    process.exit(1);
+  }
   console.log('✓ 관리자 계정 생성 완료 (비밀번호: admin1234)');
 }
 main().catch(console.error);
