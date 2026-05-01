@@ -11,6 +11,7 @@
     "create-admin": "npx ts-node --project tsconfig.json scripts/create-admin.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.105.1",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
     "google-auth-library": "^10.6.2",
