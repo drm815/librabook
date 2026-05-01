@@ -24,6 +24,48 @@ export function useAuth() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+
+    // 사용자 없음(404) + teacher/student → 자동 등록 후 재로그인
+    if (res.status === 404 && body.role !== 'admin') {
+      const registerBody: Record<string, string> = {
+        role: body.role,
+        password: body.password,
+      };
+      if (body.role === 'teacher') {
+        registerBody.name = body.name;
+        registerBody.subject = body.subject;
+      } else {
+        registerBody.studentId = body.studentId;
+        registerBody.name = body.studentId; // student는 학번을 이름으로
+      }
+
+      const regRes = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerBody),
+      });
+
+      if (!regRes.ok) {
+        const err = await regRes.json();
+        throw new Error(err.error);
+      }
+
+      // 등록 후 재로그인
+      const retryRes = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!retryRes.ok) {
+        const err = await retryRes.json();
+        throw new Error(err.error);
+      }
+      const data = await retryRes.json();
+      localStorage.setItem('librabook_user', JSON.stringify(data.user));
+      setUser(data.user);
+      return data.user;
+    }
+
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.error);

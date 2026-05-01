@@ -44,7 +44,7 @@ export default function LoginForm() {
             <button
               key={r}
               type="button"
-              onClick={() => setRole(r)}
+              onClick={() => { setRole(r); setPassword(''); setError(''); }}
               className={`flex-1 py-2 text-sm rounded-md transition-colors ${
                 role === r ? 'bg-white shadow text-[#E8899A] font-medium' : 'text-gray-500'
               }`}

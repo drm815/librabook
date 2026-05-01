@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await query.limit(1).single();
 
   if (error || !data) {
-    return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 401 });
+    return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
   }
 
   const isValid = await bcrypt.compare(password, data.password_hash);
