@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
 import { getCurrentKSTDate, isStudentReservationAllowed } from '@/lib/utils';
 
 export async function GET(req: NextRequest) {
+  const supabase = getSupabase();
   const { searchParams } = new URL(req.url);
   const date = searchParams.get('date') ?? getCurrentKSTDate();
   const session = await getSession();
@@ -33,6 +34,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabase();
   const session = await getSession();
   if (!session || session.role !== 'student') {
     return NextResponse.json({ error: '학생만 좌석 예약 가능' }, { status: 403 });

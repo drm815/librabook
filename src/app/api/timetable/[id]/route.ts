@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const supabase = getSupabase();
   const session = await getSession();
   if (!session || session.role !== 'admin') {
     return NextResponse.json({ error: '권한 없음' }, { status: 403 });

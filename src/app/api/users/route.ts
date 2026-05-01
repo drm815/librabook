@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabase();
   const body: {
     name: string;
     role: 'teacher' | 'student';
@@ -11,7 +12,6 @@ export async function POST(req: NextRequest) {
     password: string;
   } = await req.json();
 
-  // 중복 확인
   let dupQuery = supabase.from('users').select('id').eq('role', body.role);
   if (body.role === 'teacher') {
     dupQuery = dupQuery.eq('name', body.name).eq('subject', body.subject ?? '');
@@ -32,8 +32,6 @@ export async function POST(req: NextRequest) {
     password_hash: passwordHash,
   });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
 }

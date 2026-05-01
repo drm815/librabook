@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
 import type { Notification } from '@/types';
 
 export async function GET() {
+  const supabase = getSupabase();
   const session = await getSession();
   if (!session) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
 
@@ -29,6 +30,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabase();
   const body: Omit<Notification, 'id' | 'createdAt'> = await req.json();
   const { error } = await supabase.from('notifications').insert({
     user_id: body.userId,
@@ -43,6 +45,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const supabase = getSupabase();
   const session = await getSession();
   if (!session) return NextResponse.json({ error: '인증 필요' }, { status: 401 });
 

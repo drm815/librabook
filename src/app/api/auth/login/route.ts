@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { signToken, COOKIE_NAME } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabase();
   const body = await req.json();
   const { role, password } = body;
 

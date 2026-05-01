@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
+  const supabase = getSupabase();
   const { searchParams } = new URL(req.url);
   const month = searchParams.get('month');
   const date = searchParams.get('date');
@@ -43,6 +44,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabase();
   const session = await getSession();
   if (!session || session.role === 'student') {
     return NextResponse.json({ error: '선생님만 수업 예약 가능' }, { status: 403 });
@@ -54,7 +56,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '행사 등록은 관리자만 가능' }, { status: 403 });
   }
 
-  // 충돌 확인
   const { data: existing } = await supabase
     .from('reservations')
     .select('id, teacher_id, class_name, grade, type')

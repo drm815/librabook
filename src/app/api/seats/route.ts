@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
 import type { Seat } from '@/types';
 
 export async function GET() {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('seats')
     .select('*')
@@ -19,6 +20,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabase();
   const session = await getSession();
   if (!session || session.role !== 'admin') {
     return NextResponse.json({ error: '권한 없음' }, { status: 403 });

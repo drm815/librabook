@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
 import { DEFAULT_PERIODS } from '@/lib/constants';
 
 export async function GET() {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('periods')
     .select('*')
@@ -23,6 +24,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = getSupabase();
   const session = await getSession();
   if (!session || session.role !== 'admin') {
     return NextResponse.json({ error: '권한 없음' }, { status: 403 });
@@ -30,7 +32,6 @@ export async function POST(req: NextRequest) {
 
   const periods: { name: string; startTime: string; endTime: string }[] = await req.json();
 
-  // 기존 전체 삭제 후 재삽입
   await supabase.from('periods').delete().neq('id', '');
 
   const { error } = await supabase.from('periods').insert(

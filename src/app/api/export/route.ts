@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import { getSession } from '@/lib/auth';
 import * as XLSX from 'xlsx';
 
 export async function GET(req: NextRequest) {
+  const supabase = getSupabase();
   const session = await getSession();
   if (!session || session.role !== 'admin') {
     return NextResponse.json({ error: '권한 없음' }, { status: 403 });

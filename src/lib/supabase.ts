@@ -6,8 +6,3 @@ export function getSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
-
-// alias for convenience
-export const supabase = {
-  from: (table: string) => getSupabase().from(table),
-};
