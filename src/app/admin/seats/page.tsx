@@ -3,52 +3,107 @@ import { useState, useEffect } from 'react';
 import type { Seat } from '@/types';
 
 export default function AdminSeatsPage() {
-  const [seats, setSeats] = useState<Seat[]>([]);
-  const [rows, setRows] = useState(4);
-  const [cols, setCols] = useState(6);
+  const [savedSeats, setSavedSeats] = useState<Seat[]>([]);
+  const [rows, setRows] = useState(6);
+  const [cols, setCols] = useState(8);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [labels, setLabels] = useState<Record<string, string>>({});
+  const [editingLabel, setEditingLabel] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetch('/api/seats?all=true')
       .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) setSeats(data);
+      .then((data: Seat[]) => {
+        if (!Array.isArray(data)) return;
+        setSavedSeats(data);
+
+        // 저장된 좌석으로 그리드 초기화
+        if (data.length > 0) {
+          const maxRow = Math.max(...data.map(s => s.row));
+          const maxCol = Math.max(...data.map(s => s.col));
+          setRows(maxRow);
+          setCols(maxCol);
+
+          const newSelected = new Set<string>();
+          const newLabels: Record<string, string> = {};
+          data.forEach(s => {
+            const key = `${s.row}-${s.col}`;
+            if (s.isActive) newSelected.add(key);
+            newLabels[key] = s.label;
+          });
+          setSelected(newSelected);
+          setLabels(newLabels);
+        }
       });
   }, []);
 
-  // 현재 설정된 좌석을 그리드로 표현
-  const maxRow = seats.length > 0 ? Math.max(...seats.map(s => s.row)) : 0;
-  const maxCol = seats.length > 0 ? Math.max(...seats.map(s => s.col)) : 0;
-
-  function getSeat(row: number, col: number) {
-    return seats.find(s => s.row === row && s.col === col);
+  function toggleCell(row: number, col: number) {
+    const key = `${row}-${col}`;
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+        // 자동 라벨 (선택 순서)
+        if (!labels[key]) {
+          setLabels(l => ({ ...l, [key]: `${next.size}번` }));
+        }
+      }
+      return next;
+    });
   }
 
-  async function handleGenerate() {
-    if (!confirm(`${rows}행 × ${cols}열 = ${rows * cols}개 좌석을 새로 생성합니다. 기존 좌석은 모두 삭제됩니다.`)) return;
+  function handleLabelChange(key: string, value: string) {
+    setLabels(prev => ({ ...prev, [key]: value }));
+  }
+
+  // 선택된 좌석에 번호 자동 재부여
+  function renumberSeats() {
+    const newLabels = { ...labels };
+    let num = 1;
+    for (let r = 1; r <= rows; r++) {
+      for (let c = 1; c <= cols; c++) {
+        const key = `${r}-${c}`;
+        if (selected.has(key)) {
+          newLabels[key] = `${num}번`;
+          num++;
+        }
+      }
+    }
+    setLabels(newLabels);
+  }
+
+  async function handleSave() {
+    if (selected.size === 0) {
+      setMessage('좌석을 하나 이상 선택해주세요.');
+      return;
+    }
     setLoading(true);
     setMessage('');
 
-    // 기존 좌석 비활성화 후 새로 생성
-    const newSeats = [];
+    const seats = [];
     for (let r = 1; r <= rows; r++) {
       for (let c = 1; c <= cols; c++) {
-        const num = (r - 1) * cols + c;
-        newSeats.push({ row: r, col: c, label: `${num}번`, isActive: true });
+        const key = `${r}-${c}`;
+        if (selected.has(key)) {
+          seats.push({ row: r, col: c, label: labels[key] || `${r}-${c}`, isActive: true });
+        }
       }
     }
 
     const res = await fetch('/api/seats', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newSeats),
+      body: JSON.stringify(seats),
     });
 
     if (res.ok) {
       const updated = await fetch('/api/seats?all=true').then(r => r.json());
-      setSeats(updated);
-      setMessage(`${rows * cols}개 좌석이 생성됐습니다.`);
+      setSavedSeats(updated);
+      setMessage(`${seats.length}개 좌석이 저장됐습니다.`);
     } else {
       const err = await res.json();
       setMessage(`오류: ${err.error}`);
@@ -56,25 +111,14 @@ export default function AdminSeatsPage() {
     setLoading(false);
   }
 
-  async function toggleSeat(seat: Seat) {
-    const res = await fetch(`/api/seats/${seat.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive: !seat.isActive }),
-    });
-    if (res.ok) {
-      setSeats(prev => prev.map(s => s.id === seat.id ? { ...s, isActive: !s.isActive } : s));
-    }
-  }
-
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-6">열람석 배치 설정</h1>
 
-      {/* 새 배치 생성 */}
+      {/* 그리드 크기 설정 */}
       <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-        <h2 className="font-bold mb-4">새 배치 생성</h2>
-        <div className="flex items-center gap-4 mb-4">
+        <h2 className="font-bold mb-4">그리드 크기 설정</h2>
+        <div className="flex items-center gap-4 flex-wrap">
           <div>
             <label className="text-sm text-gray-500 block mb-1">행 수</label>
             <input
@@ -93,57 +137,88 @@ export default function AdminSeatsPage() {
           </div>
           <div className="self-end">
             <button
-              onClick={handleGenerate}
+              onClick={renumberSeats}
+              className="border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm hover:bg-gray-50"
+            >
+              번호 재부여
+            </button>
+          </div>
+          <div className="self-end">
+            <button
+              onClick={handleSave}
               disabled={loading}
               className="bg-[#E8899A] text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
             >
-              {loading ? '생성 중...' : '배치 생성'}
+              {loading ? '저장 중...' : '저장'}
             </button>
           </div>
         </div>
         {message && (
-          <p className={`text-sm ${message.startsWith('오류') ? 'text-red-500' : 'text-green-600'}`}>{message}</p>
+          <p className={`text-sm mt-3 ${message.startsWith('오류') ? 'text-red-500' : 'text-green-600'}`}>{message}</p>
         )}
       </div>
 
-      {/* 현재 배치 미리보기 */}
-      {seats.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h2 className="font-bold mb-2">현재 배치</h2>
-          <p className="text-sm text-gray-500 mb-4">좌석을 클릭하면 활성/비활성을 토글합니다.</p>
-          <div className="mb-4 text-xs text-gray-400 flex gap-4">
-            <span className="flex items-center gap-1"><span className="w-4 h-4 rounded bg-[#B8E0D2] inline-block" /> 활성</span>
-            <span className="flex items-center gap-1"><span className="w-4 h-4 rounded bg-gray-200 inline-block" /> 비활성</span>
+      {/* 배치 편집 그리드 */}
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold">배치 편집</h2>
+          <div className="flex gap-4 text-xs text-gray-400">
+            <span className="flex items-center gap-1"><span className="w-4 h-4 rounded bg-[#B8E0D2] inline-block" /> 좌석</span>
+            <span className="flex items-center gap-1"><span className="w-4 h-4 rounded border border-dashed border-gray-300 inline-block" /> 빈 공간</span>
           </div>
-          {/* 입구 표시 */}
-          <div className="text-center text-xs text-gray-400 mb-2">▼ 입구</div>
-          <div
-            className="grid gap-2 w-fit"
-            style={{ gridTemplateColumns: `repeat(${maxCol}, minmax(48px, 1fr))` }}
-          >
-            {Array.from({ length: maxRow }, (_, ri) =>
-              Array.from({ length: maxCol }, (_, ci) => {
-                const seat = getSeat(ri + 1, ci + 1);
-                if (!seat) return (
-                  <div key={`${ri}-${ci}`} className="w-12 h-12" />
-                );
-                return (
-                  <button
-                    key={seat.id}
-                    onClick={() => toggleSeat(seat)}
-                    className={`w-12 h-12 rounded-lg text-xs font-medium transition-colors ${
-                      seat.isActive ? 'bg-[#B8E0D2] hover:bg-[#9ecfc0] text-gray-700' : 'bg-gray-200 hover:bg-gray-300 text-gray-400'
-                    }`}
-                  >
-                    {seat.label}
-                  </button>
-                );
-              })
-            )}
-          </div>
-          <p className="text-sm text-gray-500 mt-4">총 {seats.filter(s => s.isActive).length}개 활성 좌석</p>
         </div>
-      )}
+        <p className="text-sm text-gray-500 mb-4">칸을 클릭해서 좌석을 추가/제거하세요. 좌석 이름을 더블클릭하면 수정할 수 있습니다.</p>
+
+        <div className="text-center text-xs text-gray-400 mb-3">▼ 입구</div>
+        <div
+          className="grid gap-2 w-fit"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(52px, 1fr))` }}
+        >
+          {Array.from({ length: rows }, (_, ri) =>
+            Array.from({ length: cols }, (_, ci) => {
+              const key = `${ri + 1}-${ci + 1}`;
+              const isOn = selected.has(key);
+              return (
+                <div key={key} className="relative">
+                  {isOn ? (
+                    <div
+                      className="w-13 h-13 rounded-lg bg-[#B8E0D2] cursor-pointer hover:bg-[#9ecfc0] transition-colors flex items-center justify-center"
+                      style={{ width: 52, height: 52 }}
+                      onClick={() => toggleCell(ri + 1, ci + 1)}
+                    >
+                      {editingLabel === key ? (
+                        <input
+                          autoFocus
+                          value={labels[key] || ''}
+                          onChange={e => handleLabelChange(key, e.target.value)}
+                          onBlur={() => setEditingLabel(null)}
+                          onKeyDown={e => e.key === 'Enter' && setEditingLabel(null)}
+                          onClick={e => e.stopPropagation()}
+                          className="w-full text-center text-xs bg-transparent outline-none"
+                        />
+                      ) : (
+                        <span
+                          className="text-xs text-gray-700 font-medium select-none"
+                          onDoubleClick={e => { e.stopPropagation(); setEditingLabel(key); }}
+                        >
+                          {labels[key] || ''}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      className="w-13 h-13 rounded-lg border border-dashed border-gray-300 cursor-pointer hover:bg-gray-50 transition-colors"
+                      style={{ width: 52, height: 52 }}
+                      onClick={() => toggleCell(ri + 1, ci + 1)}
+                    />
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+        <p className="text-sm text-gray-500 mt-4">선택된 좌석: {selected.size}개</p>
+      </div>
     </div>
   );
 }
