@@ -13,7 +13,7 @@ export function getCurrentKSTTime(): string {
 
 export function isStudentReservationAllowed(): boolean {
   const time = getCurrentKSTTime();
-  return time >= '07:00' && time <= '13:10';
+  return time >= '07:00' && time <= '16:20';
 }
 
 export function getMonthDays(year: number, month: number): Date[] {

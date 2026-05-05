@@ -13,7 +13,6 @@ interface Props {
 function SeatGrid({ seats, reservedSeats, onSeatClick, canReserve }: Props) {
   if (seats.length === 0) return null;
   const rows = Math.max(...seats.map(s => s.row));
-  // col을 1000 오프셋 제거해서 정규화
   const colOffset = Math.min(...seats.map(s => s.col)) >= 1000 ? 1000 : 0;
   const cols = Math.max(...seats.map(s => s.col - colOffset));
 
@@ -53,16 +52,37 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
   return (
     <div className="w-full">
-      <div className="w-full bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-6">▼ 입구</div>
+      {/* 입구 */}
+      <div className="w-full bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-4">▼ 입구</div>
+
       {hasBoth ? (
-        <div className="flex gap-8 justify-center flex-wrap">
-          <div>
-            <p className="text-xs text-gray-400 text-center mb-2">좌측</p>
+        <div className="flex items-start gap-4 w-full">
+          {/* 좌측 테이블 - 왼쪽 끝 */}
+          <div className="flex flex-col items-center shrink-0">
+            <p className="text-xs text-gray-400 mb-2">좌측</p>
             <SeatGrid seats={leftSeats} reservedSeats={reservedSeats} onSeatClick={onSeatClick} canReserve={canReserve} />
           </div>
-          <div className="border-l border-dashed border-gray-200" />
-          <div>
-            <p className="text-xs text-gray-400 text-center mb-2">우측</p>
+
+          {/* 서가 - 좌측 테이블 오른쪽 */}
+          <div className="flex flex-col items-center justify-center self-stretch shrink-0">
+            <div className="h-full min-h-[120px] w-10 bg-amber-100 border border-amber-300 rounded-lg flex items-center justify-center">
+              <span className="text-xs font-bold text-amber-700 [writing-mode:vertical-rl]">서 가</span>
+            </div>
+          </div>
+
+          {/* 가운데 빈 공간 */}
+          <div className="flex-1" />
+
+          {/* 무대 - 우측 테이블 왼쪽 */}
+          <div className="flex flex-col items-center justify-center self-stretch shrink-0">
+            <div className="h-full min-h-[120px] w-14 bg-purple-100 border border-purple-300 rounded-lg flex items-center justify-center">
+              <span className="text-xs font-bold text-purple-700 [writing-mode:vertical-rl]">무 대</span>
+            </div>
+          </div>
+
+          {/* 우측 테이블 - 오른쪽 끝 */}
+          <div className="flex flex-col items-center shrink-0">
+            <p className="text-xs text-gray-400 mb-2">우측</p>
             <SeatGrid seats={rightSeats} reservedSeats={reservedSeats} onSeatClick={onSeatClick} canReserve={canReserve} />
           </div>
         </div>

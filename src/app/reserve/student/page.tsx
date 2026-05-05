@@ -3,13 +3,15 @@ import { useState, useEffect } from 'react';
 import SeatMap from '@/components/reservation/SeatMap';
 import LibraryActivityTab from '@/components/library/LibraryActivityTab';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import { isStudentReservationAllowed, getCurrentKSTDate } from '@/lib/utils';
 import type { Seat } from '@/types';
 
 type Tab = 'seat' | 'library';
 
 export default function StudentReservePage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>('seat');
   const [seats, setSeats] = useState<Seat[]>([]);
   const [reservedSeats, setReservedSeats] = useState<{ seatId: string }[]>([]);
@@ -49,7 +51,21 @@ export default function StudentReservePage() {
 
   return (
     <div className="min-h-screen bg-[#FDF6F0]">
-      {/* 탭 헤더 */}
+      {/* 상단 헤더 */}
+      <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between">
+        <h1 className="text-base font-bold text-[#333]">LibraBook</h1>
+        <div className="flex items-center gap-4">
+          {user && <span className="text-sm text-gray-500">{user.name}</span>}
+          <button
+            onClick={async () => { await logout(); router.push('/login'); }}
+            className="text-sm text-gray-400 hover:text-red-500 transition-colors"
+          >
+            로그아웃
+          </button>
+        </div>
+      </header>
+
+      {/* 탭 */}
       <div className="bg-white border-b border-gray-100">
         <div className="flex">
           <button
@@ -81,7 +97,7 @@ export default function StudentReservePage() {
         {tab === 'seat' && (
           <>
             <h1 className="text-xl font-bold mb-2">방과 후 좌석 예약</h1>
-            <p className="text-sm text-gray-500 mb-6">{getCurrentKSTDate()} · 예약 가능 시간: 07:00~13:10</p>
+            <p className="text-sm text-gray-500 mb-6">{getCurrentKSTDate()} · 예약 가능 시간: 07:00~16:20</p>
             {!canReserve && <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-700">현재 예약 가능 시간이 아닙니다.</div>}
             {message && <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-sm text-green-700">{message}</div>}
             <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center">
