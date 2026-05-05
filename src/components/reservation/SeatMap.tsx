@@ -46,15 +46,8 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
   return (
     <div className="w-full overflow-x-auto">
-      {/* 입구 + 정보검색 행 */}
-      <div className="flex items-stretch gap-2 mb-3 min-w-max">
-        {/* 정보검색 - 입구 왼쪽에 세로 배치 */}
-        <div className="bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 py-1">
-          <span className="text-xs font-bold text-emerald-700 [writing-mode:vertical-rl] tracking-widest">정보검색</span>
-        </div>
-        {/* 입구 */}
-        <div className="flex-1 bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500">▼ 입구</div>
-      </div>
+      {/* 입구 */}
+      <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-3 min-w-max">▼ 입구</div>
 
       {hasBoth ? (
         <div className="flex items-start gap-2 min-w-max">
@@ -92,8 +85,12 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
           </div>
 
-          {/* 약간의 간격 */}
-          <div className="w-4" />
+          {/* 가운데: 정보검색 세로 배치 (입구 ~ 무대 사이) */}
+          <div className="self-stretch flex items-center justify-center mx-2">
+            <div className="h-full bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 min-h-[80px]">
+              <span className="text-xs font-bold text-emerald-700 [writing-mode:vertical-rl] tracking-widest">정보검색</span>
+            </div>
+          </div>
 
           {/* ── 우측 영역 (오른쪽 끝으로 붙임) ── */}
           <div className="flex flex-col gap-2 ml-auto">
