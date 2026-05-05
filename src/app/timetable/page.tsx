@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { format, addMonths, subMonths } from 'date-fns';
 import TimetableGrid from '@/components/timetable/TimetableGrid';
+import CalendarGrid from '@/components/timetable/CalendarGrid';
 import ReservationModal from '@/components/reservation/ReservationModal';
 import ReservationDetailModal from '@/components/reservation/ReservationDetailModal';
 import ConflictModal from '@/components/reservation/ConflictModal';
@@ -110,9 +111,13 @@ export default function TimetablePage() {
         </div>
         {loading ? (
           <div className="text-center py-10 text-gray-400">불러오는 중...</div>
+        ) : user?.role === 'student' ? (
+          <div className="bg-white rounded-2xl shadow-sm p-4">
+            <TimetableGrid days={days} periods={periods} getReservation={getReservation} onCellClick={handleCellClick} userRole={user.role} />
+          </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-sm p-4">
-            <TimetableGrid days={days} periods={periods} getReservation={getReservation} onCellClick={handleCellClick} userRole={user?.role} />
+            <CalendarGrid days={days} periods={periods} getReservation={getReservation} onCellClick={handleCellClick} userRole={user?.role} />
           </div>
         )}
       </main>
