@@ -51,12 +51,12 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
       <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-3">▼ 입구</div>
 
       {hasBoth ? (
-        <div className="flex items-start gap-8">
+        <div className="flex items-start gap-16">
 
           {/* ── 왼쪽 영역 ── */}
           <div className="flex items-start gap-6">
 
-            {/* 서가 세로 막대 */}
+            {/* 서가 세로 막대 (좌측 끝) */}
             <div className="self-stretch w-9 bg-amber-100 border-2 border-amber-300 rounded-xl flex items-center justify-center min-h-[200px]">
               <span className="text-sm font-bold text-amber-700 [writing-mode:vertical-rl] tracking-widest">서 가</span>
             </div>
@@ -72,15 +72,20 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
               </div>
             </div>
 
-            {/* 데스크 + 서가 큰박스 */}
+            {/* 서가 세로 막대 (좌석 오른쪽) */}
+            <div className="self-stretch w-9 bg-amber-100 border-2 border-amber-300 rounded-xl flex items-center justify-center min-h-[200px]">
+              <span className="text-sm font-bold text-amber-700 [writing-mode:vertical-rl] tracking-widest">서 가</span>
+            </div>
+
+            {/* 데스크 + 북트레일러 */}
             <div className="flex flex-col gap-6 mt-4">
               {/* 데스크 */}
               <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-3 py-2">
                 <span className="text-xs font-bold text-sky-700">데 스 크</span>
               </div>
-              {/* 서가 큰 박스 */}
+              {/* 북트레일러 */}
               <div className="bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center" style={{ width: 130, height: 90 }}>
-                <span className="text-sm font-bold text-amber-600">서 가</span>
+                <span className="text-sm font-bold text-amber-600">북트레일러</span>
               </div>
             </div>
 
