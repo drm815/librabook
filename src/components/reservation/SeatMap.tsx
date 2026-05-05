@@ -38,8 +38,8 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
   const rightSeats = seats.filter(s => s.col >= 1000);
   const hasBoth = leftSeats.length > 0 && rightSeats.length > 0;
 
-  const leftSorted = [...leftSeats].sort((a, b) => parseInt(a.label) - parseInt(b.label));
-  const rightSorted = [...rightSeats].sort((a, b) => parseInt(b.label) - parseInt(a.label));
+  const leftSorted = [...leftSeats].sort((a, b) => a.row !== b.row ? a.row - b.row : a.col - b.col);
+  const rightSorted = [...rightSeats].sort((a, b) => a.row !== b.row ? a.row - b.row : (a.col - 1000) - (b.col - 1000));
 
   const rightCols = 8;
   const rightRows = Math.ceil(rightSeats.length / rightCols);
