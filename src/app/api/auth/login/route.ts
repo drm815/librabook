@@ -31,11 +31,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '비밀번호가 올바르지 않습니다.' }, { status: 401 });
   }
 
-  const token = await signToken({ userId: data.id, role: data.role, name: data.name });
+  // 도서부 여부 확인
+  let isLibraryMember = false;
+  if (data.role === 'student' && data.student_id) {
+    const { data: memberData } = await supabase
+      .from('library_members')
+      .select('id')
+      .eq('student_id', data.student_id)
+      .limit(1)
+      .single();
+    isLibraryMember = !!memberData;
+  }
+
+  const token = await signToken({ userId: data.id, role: data.role, name: data.name, isLibraryMember });
 
   const response = NextResponse.json({
     success: true,
-    user: { id: data.id, name: data.name, role: data.role },
+    user: { id: data.id, name: data.name, role: data.role, isLibraryMember },
   });
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,

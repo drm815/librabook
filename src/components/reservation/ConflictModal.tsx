@@ -15,10 +15,20 @@ interface Props {
   onNegotiationComplete: (reservationData: { className: string; grade: string; purpose: string }) => Promise<void>;
 }
 
+function parseClassInput(value: string): { grade: string; className: string } {
+  const match = value.match(/^(\d+)-(.+)$/);
+  if (match) return { grade: match[1], className: match[2] };
+  return { grade: '', className: value };
+}
+
+function formatConflictLabel(grade: string, className: string) {
+  if (grade) return `${grade}-${className}`;
+  return className;
+}
+
 export default function ConflictModal({ conflict, onClose, onNegotiationComplete }: Props) {
   const [agreed, setAgreed] = useState(false);
-  const [className, setClassName] = useState('');
-  const [grade, setGrade] = useState('');
+  const [classInput, setClassInput] = useState('');
   const [purpose, setPurpose] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -26,6 +36,7 @@ export default function ConflictModal({ conflict, onClose, onNegotiationComplete
     e.preventDefault();
     if (!agreed) return;
     setLoading(true);
+    const { grade, className } = parseClassInput(classInput.trim());
     await onNegotiationComplete({ className, grade, purpose });
     setLoading(false);
   }
@@ -36,19 +47,28 @@ export default function ConflictModal({ conflict, onClose, onNegotiationComplete
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
           <p className="text-sm font-medium text-amber-800">이미 예약된 시간입니다</p>
           <p className="text-xs text-amber-600 mt-1">
-            기존 예약: {conflict.grade}학년 {conflict.className}반
-            ({conflict.type === 'class' ? '수업' : '행사'})
+            기존 예약: {formatConflictLabel(conflict.grade, conflict.className)}
+            {' '}({conflict.type === 'class' ? '수업' : '행사'})
           </p>
         </div>
         <p className="text-sm text-gray-600 mb-4">
           기존 예약자와 협의 후, 협의 완료 시 아래에 체크하고 예약을 신청하세요.
         </p>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="flex gap-2">
-            <input placeholder="학년" value={grade} onChange={e => setGrade(e.target.value)} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]" required />
-            <input placeholder="반" value={className} onChange={e => setClassName(e.target.value)} className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]" required />
-          </div>
-          <input placeholder="수업 목적" value={purpose} onChange={e => setPurpose(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]" required />
+          <input
+            placeholder="학반 또는 수업명 (예: 3-1, 독서토론반)"
+            value={classInput}
+            onChange={e => setClassInput(e.target.value)}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
+            required
+          />
+          <input
+            placeholder="수업 목적"
+            value={purpose}
+            onChange={e => setPurpose(e.target.value)}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
+            required
+          />
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="accent-[#E8899A]" />
             기존 예약자와 협의를 완료했습니다

@@ -64,15 +64,15 @@ export default function TimetablePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDF6F0]">
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+    <div className="h-screen flex flex-col bg-[#FDF6F0]">
+      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shrink-0">
         <h1 className="text-lg font-bold text-[#333]">LibraBook</h1>
         <div className="flex items-center gap-4">
           {user && <span className="text-sm text-gray-600">{user.name} ({user.role === 'teacher' ? '선생님' : user.role === 'student' ? '학생' : '관리자'})</span>}
           <button onClick={async () => { await logout(); router.push('/login'); }} className="text-sm text-gray-500 hover:text-red-500 transition-colors">로그아웃</button>
         </div>
       </header>
-      <main className="p-6">
+      <main className="flex-1 overflow-auto p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <button onClick={() => setCurrentDate(d => subMonths(d, 1))} className="p-2 rounded-lg hover:bg-gray-100">◀</button>

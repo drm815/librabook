@@ -8,9 +8,16 @@ interface Props {
   onSubmit: (data: { className: string; grade: string; purpose: string; type: string }) => Promise<void>;
 }
 
+// "3-1" → { grade: "3", className: "1" }
+// "독서토론반" → { grade: "", className: "독서토론반" }
+function parseClassInput(value: string): { grade: string; className: string } {
+  const match = value.match(/^(\d+)-(.+)$/);
+  if (match) return { grade: match[1], className: match[2] };
+  return { grade: '', className: value };
+}
+
 export default function ReservationModal({ date, periodName, onClose, onSubmit }: Props) {
-  const [className, setClassName] = useState('');
-  const [grade, setGrade] = useState('');
+  const [classInput, setClassInput] = useState('');
   const [purpose, setPurpose] = useState('');
   const [type] = useState('class');
   const [loading, setLoading] = useState(false);
@@ -20,6 +27,7 @@ export default function ReservationModal({ date, periodName, onClose, onSubmit }
     e.preventDefault();
     setLoading(true);
     setError('');
+    const { grade, className } = parseClassInput(classInput.trim());
     try {
       await onSubmit({ className, grade, purpose, type });
       onClose();
@@ -36,22 +44,13 @@ export default function ReservationModal({ date, periodName, onClose, onSubmit }
         <h2 className="text-lg font-bold mb-1">수업 예약 신청</h2>
         <p className="text-sm text-gray-500 mb-4">{date} · {periodName}</p>
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="flex gap-2">
-            <input
-              placeholder="학년 (예: 2)"
-              value={grade}
-              onChange={e => setGrade(e.target.value)}
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
-              required
-            />
-            <input
-              placeholder="반 (예: 3)"
-              value={className}
-              onChange={e => setClassName(e.target.value)}
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
-              required
-            />
-          </div>
+          <input
+            placeholder="학반 또는 수업명 (예: 3-1, 독서토론반)"
+            value={classInput}
+            onChange={e => setClassInput(e.target.value)}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
+            required
+          />
           <input
             placeholder="수업 목적"
             value={purpose}

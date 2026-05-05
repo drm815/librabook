@@ -1,12 +1,16 @@
 'use client';
 import { useState, useEffect } from 'react';
 import SeatMap from '@/components/reservation/SeatMap';
+import LibraryActivityTab from '@/components/library/LibraryActivityTab';
 import { useAuth } from '@/hooks/useAuth';
 import { isStudentReservationAllowed, getCurrentKSTDate } from '@/lib/utils';
 import type { Seat } from '@/types';
 
+type Tab = 'seat' | 'library';
+
 export default function StudentReservePage() {
   const { user } = useAuth();
+  const [tab, setTab] = useState<Tab>('seat');
   const [seats, setSeats] = useState<Seat[]>([]);
   const [reservedSeats, setReservedSeats] = useState<{ seatId: string }[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
@@ -44,14 +48,53 @@ export default function StudentReservePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDF6F0] p-6">
-      <h1 className="text-xl font-bold mb-2">방과 후 좌석 예약</h1>
-      <p className="text-sm text-gray-500 mb-6">{getCurrentKSTDate()} · 예약 가능 시간: 07:00~13:10</p>
-      {!canReserve && <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-700">현재 예약 가능 시간이 아닙니다.</div>}
-      {message && <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-sm text-green-700">{message}</div>}
-      <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center">
-        <SeatMap seats={seats} reservedSeats={reservedSeats} onSeatClick={setSelectedSeat} canReserve={canReserve} />
+    <div className="min-h-screen bg-[#FDF6F0]">
+      {/* 탭 헤더 */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="flex">
+          <button
+            onClick={() => setTab('seat')}
+            className={`flex-1 py-3 text-sm font-medium transition-colors ${
+              tab === 'seat'
+                ? 'text-[#E8899A] border-b-2 border-[#E8899A]'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            좌석 예약
+          </button>
+          {user?.isLibraryMember && (
+            <button
+              onClick={() => setTab('library')}
+              className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                tab === 'library'
+                  ? 'text-[#E8899A] border-b-2 border-[#E8899A]'
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              도서부 활동일지
+            </button>
+          )}
+        </div>
       </div>
+
+      <div className="p-6">
+        {tab === 'seat' && (
+          <>
+            <h1 className="text-xl font-bold mb-2">방과 후 좌석 예약</h1>
+            <p className="text-sm text-gray-500 mb-6">{getCurrentKSTDate()} · 예약 가능 시간: 07:00~13:10</p>
+            {!canReserve && <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-700">현재 예약 가능 시간이 아닙니다.</div>}
+            {message && <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-sm text-green-700">{message}</div>}
+            <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center">
+              <SeatMap seats={seats} reservedSeats={reservedSeats} onSeatClick={setSelectedSeat} canReserve={canReserve} />
+            </div>
+          </>
+        )}
+
+        {tab === 'library' && user?.isLibraryMember && (
+          <LibraryActivityTab userName={user.name} />
+        )}
+      </div>
+
       {selectedSeat && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">

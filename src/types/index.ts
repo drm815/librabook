@@ -83,4 +83,20 @@ export interface AuthPayload {
   userId: string;
   role: UserRole;
   name: string;
+  isLibraryMember?: boolean;
+}
+
+export interface LibraryMember {
+  id: string;
+  studentId: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface LibraryActivity {
+  id: string;
+  userId: string;
+  date: string;
+  content: string;
+  createdAt: string;
 }
