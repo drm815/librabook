@@ -24,7 +24,9 @@ export default function LoginForm() {
       if (role === 'teacher') { body.name = name; body.subject = subject; }
       if (role === 'student') { body.studentId = studentId; }
       const user = await login(body);
-      router.push(user.role === 'admin' ? '/admin/timetable' : '/timetable');
+      if (user.role === 'admin') router.push('/admin/timetable');
+      else if (user.role === 'student') router.push('/reserve/student');
+      else router.push('/timetable');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '로그인 실패');
     } finally {

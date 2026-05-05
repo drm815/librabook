@@ -25,6 +25,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/timetable', req.url));
   }
 
+  if (pathname.startsWith('/timetable') && payload.role === 'student') {
+    return NextResponse.redirect(new URL('/reserve/student', req.url));
+  }
+
   return NextResponse.next();
 }
 
