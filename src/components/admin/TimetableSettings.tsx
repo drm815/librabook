@@ -8,8 +8,10 @@ function getDaysInMonth(year: number, month: number) {
   const days: { date: string; dow: number }[] = [];
   const d = new Date(year, month - 1, 1);
   while (d.getMonth() === month - 1) {
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
     days.push({
-      date: d.toISOString().split('T')[0],
+      date: `${d.getFullYear()}-${mm}-${dd}`,
       dow: d.getDay(),
     });
     d.setDate(d.getDate() + 1);
