@@ -15,7 +15,7 @@ export default function TimetableGrid({ days, periods, getReservation, onCellCli
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm">
+      <table className="min-w-max border-collapse text-sm">
         <thead>
           <tr>
             <th className="w-20 p-2 text-left text-gray-500 font-normal text-xs">교시</th>
