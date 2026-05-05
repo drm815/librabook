@@ -51,11 +51,12 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
       <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-3">▼ 입구</div>
 
       {hasBoth ? (
-        <div className="flex items-start gap-16">
+        <div className="flex flex-col gap-2">
 
-          {/* ── 왼쪽 영역 ── */}
-          <div className="flex flex-col gap-2">
-            {/* 상단: 서가+좌석+서가+데스크/북트레일러 */}
+          {/* 상단 행: 왼쪽 영역 + 우측 영역 */}
+          <div className="flex items-start gap-16">
+
+            {/* ── 왼쪽 영역 ── */}
             <div className="flex items-start gap-6">
 
               {/* 서가 세로 막대 (좌측 끝) */}
@@ -81,11 +82,9 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
               {/* 데스크 + 북트레일러 */}
               <div className="flex flex-col gap-6 mt-4">
-                {/* 데스크 */}
                 <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-3 py-2">
                   <span className="text-xs font-bold text-sky-700">데 스 크</span>
                 </div>
-                {/* 북트레일러 */}
                 <div className="bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center" style={{ width: 130, height: 90 }}>
                   <span className="text-sm font-bold text-amber-600">북트레일러</span>
                 </div>
@@ -93,38 +92,41 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
             </div>
 
-            {/* 하단: 소모임 공간 (왼쪽 영역 전체 너비) */}
-            <div className="bg-rose-50 border-2 border-rose-300 rounded-xl flex items-center justify-center py-3 w-full">
-              <span className="text-sm font-bold text-rose-500">소모임 공간</span>
+            {/* ── 우측 영역: 정보검색 + 무대/좌석 ── */}
+            <div className="flex items-start gap-1">
+              <div className="bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 self-start" style={{ height: 110 }}>
+                <span className="text-xs font-bold text-emerald-700 [writing-mode:vertical-rl] tracking-widest">정보검색</span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="bg-purple-100 border-2 border-purple-300 rounded-xl py-2 text-center">
+                  <span className="text-sm font-bold text-purple-700">🎭 무 대</span>
+                </div>
+                <p className="text-xs text-gray-400 text-center">우측</p>
+                <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${rightCols}, minmax(0, 1fr))` }}>
+                  {Array.from({ length: rightRows }, (_, ri) =>
+                    Array.from({ length: rightCols }, (_, ci) => {
+                      const seat = rightSorted[ri * rightCols + ci];
+                      if (!seat) return <div key={`e-${ri}-${ci}`} className="w-9 h-9" />;
+                      const isReserved = reservedSeats.some(r => r.seatId === seat.id);
+                      return <SeatButton key={seat.id} seat={seat} isReserved={isReserved} canReserve={canReserve} onSeatClick={onSeatClick} />;
+                    })
+                  )}
+                </div>
+              </div>
             </div>
+
           </div>
 
-
-          {/* ── 우측 영역: 정보검색 + 무대/좌석 나란히 ── */}
-          <div className="flex items-start gap-1">
-            {/* 정보검색 - 무대 시작점부터 8번 좌석 첫 행까지 */}
-            <div className="bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 self-start" style={{ height: 110 }}>
-              <span className="text-xs font-bold text-emerald-700 [writing-mode:vertical-rl] tracking-widest">정보검색</span>
+          {/* 하단 행: 소모임 공간 (좌측 서가 ~ 정보검색 박스 왼쪽까지) */}
+          {/* 전체 너비에서 우측(정보검색+무대+좌석) 너비를 뺀 영역 */}
+          <div className="flex gap-16">
+            <div className="bg-rose-50 border-2 border-rose-300 rounded-xl flex items-center justify-center py-3 flex-1">
+              <span className="text-sm font-bold text-rose-500">소모임 공간</span>
             </div>
-            {/* 무대 + 우측 좌석 */}
-            <div className="flex flex-col gap-2">
-              {/* 무대 배너 */}
-              <div className="bg-purple-100 border-2 border-purple-300 rounded-xl py-2 text-center">
-                <span className="text-sm font-bold text-purple-700">🎭 무 대</span>
-              </div>
-              {/* 우측 레이블 */}
-              <p className="text-xs text-gray-400 text-center">우측</p>
-              {/* 우측 좌석 - 역순 8열 */}
-              <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${rightCols}, minmax(0, 1fr))` }}>
-                {Array.from({ length: rightRows }, (_, ri) =>
-                  Array.from({ length: rightCols }, (_, ci) => {
-                    const seat = rightSorted[ri * rightCols + ci];
-                    if (!seat) return <div key={`e-${ri}-${ci}`} className="w-9 h-9" />;
-                    const isReserved = reservedSeats.some(r => r.seatId === seat.id);
-                    return <SeatButton key={seat.id} seat={seat} isReserved={isReserved} canReserve={canReserve} onSeatClick={onSeatClick} />;
-                  })
-                )}
-              </div>
+            {/* 우측 영역과 너비 맞추기 위한 빈 공간 */}
+            <div className="flex gap-1 invisible">
+              <div style={{ width: 32 }} />
+              <div style={{ width: rightCols * 36 + (rightCols - 1) * 6 }} />
             </div>
           </div>
 
