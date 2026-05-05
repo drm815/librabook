@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={`${inter.variable} ${notoSansKR.variable}`}>
-      <body className="min-h-screen bg-white text-[#333333]">
+    <html lang="ko" className={`${inter.variable} ${notoSansKR.variable} h-full`}>
+      <body className="h-full bg-white text-[#333333]">
         {children}
       </body>
     </html>
