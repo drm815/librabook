@@ -1,6 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { UserRole } from '@/types';
+
+const AUTO_LOGOUT_MS = 30 * 60 * 1000; // 30분
+const LAST_ACTIVITY_KEY = 'librabook_last_activity';
 
 interface AuthUser {
   id: string;
@@ -12,12 +15,54 @@ interface AuthUser {
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
+  const doLogout = useCallback(async () => {
+    clearTimer();
+    await fetch('/api/auth/logout', { method: 'POST' });
+    localStorage.removeItem('librabook_user');
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
+    setUser(null);
+    window.location.href = '/login';
+  }, [clearTimer]);
+
+  const resetTimer = useCallback(() => {
+    localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+    clearTimer();
+    timerRef.current = setTimeout(doLogout, AUTO_LOGOUT_MS);
+  }, [clearTimer, doLogout]);
 
   useEffect(() => {
     const stored = localStorage.getItem('librabook_user');
-    if (stored) setUser(JSON.parse(stored));
+    if (stored) {
+      // 마지막 활동 시간 확인 - 이미 30분 초과했으면 자동 로그아웃
+      const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
+      if (lastActivity && Date.now() - parseInt(lastActivity) > AUTO_LOGOUT_MS) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        doLogout();
+        setLoading(false);
+        return;
+      }
+      setUser(JSON.parse(stored));
+      resetTimer();
+    }
     setLoading(false);
-  }, []);
+  }, [doLogout, resetTimer]);
+
+  // 사용자 활동 감지
+  useEffect(() => {
+    if (!user) return;
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
+    return () => {
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+      clearTimer();
+    };
+  }, [user, resetTimer, clearTimer]);
 
   async function login(body: Record<string, string>) {
     const res = await fetch('/api/auth/login', {
@@ -64,6 +109,7 @@ export function useAuth() {
       const data = await retryRes.json();
       localStorage.setItem('librabook_user', JSON.stringify(data.user));
       setUser(data.user);
+      resetTimer();
       return data.user;
     }
 
@@ -74,13 +120,12 @@ export function useAuth() {
     const data = await res.json();
     localStorage.setItem('librabook_user', JSON.stringify(data.user));
     setUser(data.user);
+    resetTimer();
     return data.user;
   }
 
   async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    localStorage.removeItem('librabook_user');
-    setUser(null);
+    await doLogout();
   }
 
   return { user, loading, login, logout };

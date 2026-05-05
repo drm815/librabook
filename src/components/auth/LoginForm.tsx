@@ -1,8 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import type { UserRole } from '@/types';
+
+const SESSION_KEY = 'librabook_login_form';
 
 export default function LoginForm() {
   const [role, setRole] = useState<UserRole>('teacher');
@@ -12,6 +14,25 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // 새로고침 후 필드 복원
+  useEffect(() => {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+      const { role: r, name: n, subject: s, studentId: sid } = JSON.parse(saved);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (r) setRole(r);
+      if (n) setName(n);
+      if (s) setSubject(s);
+      if (sid) setStudentId(sid);
+    }
+  }, []);
+
+  function saveForm(patch: Partial<{ role: UserRole; name: string; subject: string; studentId: string }>) {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    const current = saved ? JSON.parse(saved) : {};
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...current, ...patch }));
+  }
   const { login } = useAuth();
   const router = useRouter();
 
@@ -24,6 +45,7 @@ export default function LoginForm() {
       if (role === 'teacher') { body.name = name; body.subject = subject; }
       if (role === 'student') { body.studentId = studentId; }
       const user = await login(body);
+      sessionStorage.removeItem(SESSION_KEY);
       if (user.role === 'admin') router.push('/admin/timetable');
       else if (user.role === 'student') router.push('/reserve/student');
       else router.push('/timetable');
@@ -46,7 +68,7 @@ export default function LoginForm() {
             <button
               key={r}
               type="button"
-              onClick={() => { setRole(r); setPassword(''); setError(''); }}
+              onClick={() => { setRole(r as UserRole); saveForm({ role: r as UserRole }); setPassword(''); setError(''); }}
               className={`flex-1 py-2 text-sm rounded-md transition-colors ${
                 role === r ? 'bg-white shadow text-[#E8899A] font-medium' : 'text-gray-500'
               }`}
@@ -63,7 +85,7 @@ export default function LoginForm() {
                 type="text"
                 placeholder="이름"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={e => { setName(e.target.value); saveForm({ name: e.target.value }); }}
                 className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#E8899A]"
                 required
               />
@@ -71,7 +93,7 @@ export default function LoginForm() {
                 type="text"
                 placeholder="과목"
                 value={subject}
-                onChange={e => setSubject(e.target.value)}
+                onChange={e => { setSubject(e.target.value); saveForm({ subject: e.target.value }); }}
                 className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#E8899A]"
                 required
               />
@@ -82,7 +104,7 @@ export default function LoginForm() {
               type="text"
               placeholder="학번"
               value={studentId}
-              onChange={e => setStudentId(e.target.value)}
+              onChange={e => { setStudentId(e.target.value); saveForm({ studentId: e.target.value }); }}
               className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#E8899A]"
               required
             />
