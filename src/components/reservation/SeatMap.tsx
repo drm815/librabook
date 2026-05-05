@@ -51,7 +51,7 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
       <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-3">▼ 입구</div>
 
       {hasBoth ? (
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-8">
 
           {/* ── 왼쪽 영역 ── */}
           <div className="flex items-start gap-6">
@@ -73,7 +73,7 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
             </div>
 
             {/* 데스크 + 서가 큰박스 */}
-            <div className="flex flex-col gap-2 mt-4">
+            <div className="flex flex-col gap-6 mt-4">
               {/* 데스크 */}
               <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-3 py-2">
                 <span className="text-xs font-bold text-sky-700">데 스 크</span>
