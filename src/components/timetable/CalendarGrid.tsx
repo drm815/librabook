@@ -82,7 +82,7 @@ export default function CalendarGrid({ days, periods, getReservation, onCellClic
                   className={[
                     'rounded-xl p-2 text-left transition-all border',
                     day.isHoliday
-                      ? 'bg-gray-50 border-gray-100 cursor-default opacity-50'
+                      ? 'bg-[#F9C4D2] border-[#f0a0b5] cursor-default'
                       : isSelected
                         ? 'bg-white border-[#E8899A] shadow-md'
                         : 'bg-white border-gray-100 hover:border-[#E8899A] hover:shadow-sm',
@@ -90,14 +90,14 @@ export default function CalendarGrid({ days, periods, getReservation, onCellClic
                 >
                   <div className={[
                     'text-sm font-bold mb-1',
-                    isToday ? 'text-[#E8899A]' : 'text-gray-700',
+                    day.isHoliday ? 'text-[#c0566a]' : isToday ? 'text-[#E8899A]' : 'text-gray-700',
                   ].join(' ')}>
                     {dayNum}
-                    {isToday && <span className="ml-1 text-[10px] font-normal text-[#E8899A]">오늘</span>}
+                    {isToday && !day.isHoliday && <span className="ml-1 text-[10px] font-normal text-[#E8899A]">오늘</span>}
                   </div>
 
                   {day.isHoliday ? (
-                    <div className="text-[10px] text-gray-400">휴일</div>
+                    <div className="text-xs font-bold text-[#c0566a] mt-1">휴일</div>
                   ) : reservedCount === 0 ? (
                     <div className="text-[10px] text-gray-300">비어있음</div>
                   ) : (

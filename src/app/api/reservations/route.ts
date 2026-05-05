@@ -52,9 +52,6 @@ export async function POST(req: NextRequest) {
 
   const body: { date: string; periodId: string; type: string; className: string; grade: string; purpose: string } = await req.json();
 
-  if (body.type === 'event' && session.role !== 'admin') {
-    return NextResponse.json({ error: '행사 등록은 관리자만 가능' }, { status: 403 });
-  }
 
   const { data: existing } = await supabase
     .from('reservations')
