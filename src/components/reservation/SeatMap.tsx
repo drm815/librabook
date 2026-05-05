@@ -20,7 +20,7 @@ function SeatButton({ seat, isReserved, canReserve, onSeatClick }: {
     <button
       disabled={isReserved || !canReserve}
       onClick={() => !isReserved && canReserve && onSeatClick?.(seat)}
-      className={`w-10 h-10 rounded-lg text-xs font-medium transition-colors ${
+      className={`w-9 h-9 rounded-lg text-xs font-medium transition-colors ${
         isReserved
           ? 'bg-[#E0E0E0] text-gray-400 cursor-not-allowed'
           : canReserve
@@ -39,31 +39,38 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
   const hasBoth = leftSeats.length > 0 && rightSeats.length > 0;
 
   const leftSorted = [...leftSeats].sort((a, b) => parseInt(a.label) - parseInt(b.label));
-  const rightSorted = [...rightSeats].sort((a, b) => parseInt(b.label) - parseInt(a.label)); // 역순
+  const rightSorted = [...rightSeats].sort((a, b) => parseInt(b.label) - parseInt(a.label));
 
   const rightCols = 8;
   const rightRows = Math.ceil(rightSeats.length / rightCols);
 
   return (
     <div className="w-full overflow-x-auto">
-      {/* 입구 */}
-      <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-4 min-w-max">▼ 입구</div>
+      {/* 입구 + 정보검색 행 */}
+      <div className="flex items-stretch gap-2 mb-3 min-w-max">
+        {/* 정보검색 - 입구 왼쪽에 세로 배치 */}
+        <div className="bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 py-1">
+          <span className="text-xs font-bold text-emerald-700 [writing-mode:vertical-rl] tracking-widest">정보검색</span>
+        </div>
+        {/* 입구 */}
+        <div className="flex-1 bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500">▼ 입구</div>
+      </div>
 
       {hasBoth ? (
-        <div className="flex items-start gap-4 min-w-max">
+        <div className="flex items-start gap-2 min-w-max">
 
           {/* ── 왼쪽 영역 ── */}
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-6">
 
             {/* 서가 세로 막대 */}
-            <div className="self-stretch w-10 bg-amber-100 border-2 border-amber-300 rounded-xl flex items-center justify-center min-h-[220px]">
+            <div className="self-stretch w-9 bg-amber-100 border-2 border-amber-300 rounded-xl flex items-center justify-center min-h-[200px]">
               <span className="text-sm font-bold text-amber-700 [writing-mode:vertical-rl] tracking-widest">서 가</span>
             </div>
 
             {/* 좌측 좌석 */}
             <div className="flex flex-col">
-              <p className="text-xs text-gray-400 text-center mb-2">좌측</p>
-              <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+              <p className="text-xs text-gray-400 text-center mb-1">좌측</p>
+              <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                 {leftSorted.map(seat => {
                   const isReserved = reservedSeats.some(r => r.seatId === seat.id);
                   return <SeatButton key={seat.id} seat={seat} isReserved={isReserved} canReserve={canReserve} onSeatClick={onSeatClick} />;
@@ -71,26 +78,22 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
               </div>
             </div>
 
-            {/* 데스크 + 서가 + 정보검색 박스들 */}
-            <div className="flex flex-col gap-2 ml-2 mt-5">
+            {/* 데스크 + 서가 큰박스 */}
+            <div className="flex flex-col gap-2 mt-4">
               {/* 데스크 */}
-              <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-4 py-2">
+              <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-3 py-2">
                 <span className="text-xs font-bold text-sky-700">데 스 크</span>
               </div>
               {/* 서가 큰 박스 */}
-              <div className="bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center" style={{ width: 160, height: 100 }}>
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center" style={{ width: 130, height: 90 }}>
                 <span className="text-sm font-bold text-amber-600">서 가</span>
-              </div>
-              {/* 정보검색 */}
-              <div className="bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center py-2 px-3">
-                <span className="text-xs font-bold text-emerald-700">정보검색</span>
               </div>
             </div>
 
           </div>
 
-          {/* 가운데 빈 공간 */}
-          <div className="flex-1 min-w-[60px]" />
+          {/* 약간의 간격 */}
+          <div className="w-4" />
 
           {/* ── 우측 영역 (오른쪽 끝으로 붙임) ── */}
           <div className="flex flex-col gap-2 ml-auto">
@@ -101,11 +104,11 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
             {/* 우측 레이블 */}
             <p className="text-xs text-gray-400 text-center">우측</p>
             {/* 우측 좌석 - 역순 8열 */}
-            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${rightCols}, minmax(0, 1fr))` }}>
+            <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${rightCols}, minmax(0, 1fr))` }}>
               {Array.from({ length: rightRows }, (_, ri) =>
                 Array.from({ length: rightCols }, (_, ci) => {
                   const seat = rightSorted[ri * rightCols + ci];
-                  if (!seat) return <div key={`e-${ri}-${ci}`} className="w-10 h-10" />;
+                  if (!seat) return <div key={`e-${ri}-${ci}`} className="w-9 h-9" />;
                   const isReserved = reservedSeats.some(r => r.seatId === seat.id);
                   return <SeatButton key={seat.id} seat={seat} isReserved={isReserved} canReserve={canReserve} onSeatClick={onSeatClick} />;
                 })
@@ -115,7 +118,7 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
         </div>
       ) : (
-        <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+        <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
           {seats.map(seat => {
             const isReserved = reservedSeats.some(r => r.seatId === seat.id);
             return <SeatButton key={seat.id} seat={seat} isReserved={isReserved} canReserve={canReserve} onSeatClick={onSeatClick} />;
