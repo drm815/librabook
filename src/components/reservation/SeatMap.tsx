@@ -52,48 +52,39 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
   return (
     <div className="w-full">
-      {/* 전체 레이아웃: 서가(좌) | 중앙 | 우측구역 */}
-      <div className="flex gap-3 w-full">
+      {/* 입구 - 중앙 */}
+      <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-3">▼ 입구</div>
 
-        {/* 서가 - 왼쪽 벽, 입구부터 아래까지 */}
-        <div className="flex flex-col shrink-0 w-10">
-          <div className="text-[10px] text-gray-400 text-center mb-1">입구</div>
-          <div className="flex-1 bg-amber-100 border border-amber-300 rounded-lg flex items-center justify-center min-h-[200px]">
-            <span className="text-sm font-bold text-amber-700 [writing-mode:vertical-rl] tracking-widest">서 가</span>
+      {hasBoth ? (
+        <div className="flex gap-3 w-full items-start">
+          {/* 서가 - 입구 아래부터 좌측 좌석 옆까지 */}
+          <div className="flex flex-col shrink-0 w-10 self-stretch">
+            <div className="flex-1 bg-amber-100 border border-amber-300 rounded-lg flex items-center justify-center">
+              <span className="text-sm font-bold text-amber-700 [writing-mode:vertical-rl] tracking-widest">서 가</span>
+            </div>
           </div>
-        </div>
 
-        {/* 중앙: 좌측 좌석 */}
-        {hasBoth ? (
+          {/* 좌측 좌석 */}
           <div className="flex flex-col shrink-0">
-            {/* 입구 표시 (서가 옆) */}
-            <div className="bg-gray-200 rounded-lg py-1.5 text-center text-xs text-gray-500 mb-3">▼ 입구</div>
             <p className="text-xs text-gray-400 text-center mb-2">좌측</p>
             <SeatGrid seats={leftSeats} reservedSeats={reservedSeats} onSeatClick={onSeatClick} canReserve={canReserve} />
           </div>
-        ) : (
-          <div className="flex-1">
-            <div className="bg-gray-200 rounded-lg py-1.5 text-center text-xs text-gray-500 mb-3">▼ 입구</div>
-            <SeatGrid seats={seats} reservedSeats={reservedSeats} onSeatClick={onSeatClick} canReserve={canReserve} />
-          </div>
-        )}
 
-        {/* 가운데 빈 공간 */}
-        {hasBoth && <div className="flex-1" />}
+          {/* 가운데 빈 공간 */}
+          <div className="flex-1" />
 
-        {/* 우측 구역: 무대(상단) + 우측 좌석(하단) */}
-        {hasBoth && (
+          {/* 우측 구역: 무대(상단) + 우측 좌석(하단) */}
           <div className="flex flex-col shrink-0">
-            {/* 무대 - 상단 */}
             <div className="bg-purple-100 border border-purple-300 rounded-lg py-2 px-4 text-center mb-3">
               <span className="text-xs font-bold text-purple-700">🎭 무 대</span>
             </div>
-            {/* 우측 좌석 - 무대 아래 */}
             <p className="text-xs text-gray-400 text-center mb-2">우측</p>
             <SeatGrid seats={rightSeats} reservedSeats={reservedSeats} onSeatClick={onSeatClick} canReserve={canReserve} />
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <SeatGrid seats={seats} reservedSeats={reservedSeats} onSeatClick={onSeatClick} canReserve={canReserve} />
+      )}
     </div>
   );
 }
