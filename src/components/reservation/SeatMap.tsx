@@ -85,31 +85,34 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
           </div>
 
-          {/* 가운데: 정보검색 세로 배치 (입구 ~ 무대 사이) */}
-          <div className="self-stretch flex items-center justify-center mx-2">
-            <div className="h-full bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 min-h-[80px]">
+          {/* 빈 공간 */}
+          <div className="w-6" />
+
+          {/* ── 우측 영역: 정보검색 + 무대/좌석 나란히 ── */}
+          <div className="flex items-start gap-1">
+            {/* 정보검색 - 우측 좌석 왼쪽에 붙임, 높이 절반 */}
+            <div className="bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 self-start mt-10" style={{ height: 60 }}>
               <span className="text-xs font-bold text-emerald-700 [writing-mode:vertical-rl] tracking-widest">정보검색</span>
             </div>
-          </div>
-
-          {/* ── 우측 영역 (오른쪽 끝으로 붙임) ── */}
-          <div className="flex flex-col gap-2 ml-auto">
-            {/* 무대 배너 */}
-            <div className="bg-purple-100 border-2 border-purple-300 rounded-xl py-2 text-center">
-              <span className="text-sm font-bold text-purple-700">🎭 무 대</span>
-            </div>
-            {/* 우측 레이블 */}
-            <p className="text-xs text-gray-400 text-center">우측</p>
-            {/* 우측 좌석 - 역순 8열 */}
-            <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${rightCols}, minmax(0, 1fr))` }}>
-              {Array.from({ length: rightRows }, (_, ri) =>
-                Array.from({ length: rightCols }, (_, ci) => {
-                  const seat = rightSorted[ri * rightCols + ci];
-                  if (!seat) return <div key={`e-${ri}-${ci}`} className="w-9 h-9" />;
-                  const isReserved = reservedSeats.some(r => r.seatId === seat.id);
-                  return <SeatButton key={seat.id} seat={seat} isReserved={isReserved} canReserve={canReserve} onSeatClick={onSeatClick} />;
-                })
-              )}
+            {/* 무대 + 우측 좌석 */}
+            <div className="flex flex-col gap-2">
+              {/* 무대 배너 */}
+              <div className="bg-purple-100 border-2 border-purple-300 rounded-xl py-2 text-center">
+                <span className="text-sm font-bold text-purple-700">🎭 무 대</span>
+              </div>
+              {/* 우측 레이블 */}
+              <p className="text-xs text-gray-400 text-center">우측</p>
+              {/* 우측 좌석 - 역순 8열 */}
+              <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${rightCols}, minmax(0, 1fr))` }}>
+                {Array.from({ length: rightRows }, (_, ri) =>
+                  Array.from({ length: rightCols }, (_, ci) => {
+                    const seat = rightSorted[ri * rightCols + ci];
+                    if (!seat) return <div key={`e-${ri}-${ci}`} className="w-9 h-9" />;
+                    const isReserved = reservedSeats.some(r => r.seatId === seat.id);
+                    return <SeatButton key={seat.id} seat={seat} isReserved={isReserved} canReserve={canReserve} onSeatClick={onSeatClick} />;
+                  })
+                )}
+              </div>
             </div>
           </div>
 
