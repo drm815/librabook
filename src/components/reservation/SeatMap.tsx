@@ -45,12 +45,13 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
   const rightRows = Math.ceil(rightSeats.length / rightCols);
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto flex justify-center">
+      <div className="inline-flex flex-col items-stretch">
       {/* 입구 */}
-      <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-3 min-w-max">▼ 입구</div>
+      <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-3">▼ 입구</div>
 
       {hasBoth ? (
-        <div className="flex items-start gap-2 min-w-max">
+        <div className="flex items-start gap-2">
 
           {/* ── 왼쪽 영역 ── */}
           <div className="flex items-start gap-6">
@@ -85,8 +86,6 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
           </div>
 
-          {/* 빈 공간 */}
-          <div className="w-6" />
 
           {/* ── 우측 영역: 정보검색 + 무대/좌석 나란히 ── */}
           <div className="flex items-start gap-1">
@@ -125,6 +124,7 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }
