@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('reservations')
-    .select('*')
+    .select('*, users(name)')
     .neq('status', 'cancelled')
     .order('created_at', { ascending: false });
 
@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
     periodId: r.period_id,
     type: r.type,
     teacherId: r.teacher_id,
+    teacherName: (r.users as { name: string } | null)?.name ?? '',
     className: r.class_name,
     grade: r.grade,
     purpose: r.purpose,

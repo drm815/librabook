@@ -69,6 +69,12 @@ export default function ReservationDetailModal({ reservation, periodName, isOwne
             </div>
 
             <div className="space-y-2 mb-6 text-sm">
+              {reservation.teacherName && (
+                <div className="flex justify-between py-2 border-b border-gray-50">
+                  <span className="text-gray-400">예약자</span>
+                  <span className="font-medium">{reservation.teacherName} 선생님</span>
+                </div>
+              )}
               <div className="flex justify-between py-2 border-b border-gray-50">
                 <span className="text-gray-400">학반/수업명</span>
                 <span className="font-medium">

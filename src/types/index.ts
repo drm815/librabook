@@ -34,6 +34,7 @@ export interface Reservation {
   periodId: string;
   type: ReservationType;
   teacherId: string;
+  teacherName?: string;
   className: string;
   grade: string;
   purpose: string;
