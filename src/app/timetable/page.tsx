@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { format, addMonths, subMonths } from 'date-fns';
 import TimetableGrid from '@/components/timetable/TimetableGrid';
 import ReservationModal from '@/components/reservation/ReservationModal';
+import ReservationDetailModal from '@/components/reservation/ReservationDetailModal';
 import ConflictModal from '@/components/reservation/ConflictModal';
 import { useTimetable } from '@/hooks/useTimetable';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,12 +18,16 @@ export default function TimetablePage() {
   const router = useRouter();
 
   const [selectedCell, setSelectedCell] = useState<{ date: string; periodId: string; periodName: string } | null>(null);
+  const [selectedReservation, setSelectedReservation] = useState<{ reservation: Reservation; periodName: string } | null>(null);
   const [conflict, setConflict] = useState<{ info: Reservation; date: string; periodId: string } | null>(null);
 
-  async function handleCellClick(date: string, periodId: string, existing?: Reservation) {
+  function handleCellClick(date: string, periodId: string, existing?: Reservation) {
     if (!user || user.role === 'student') return;
     const period = periods.find(p => p.id === periodId);
-    if (existing) return;
+    if (existing) {
+      setSelectedReservation({ reservation: existing, periodName: period?.name ?? '' });
+      return;
+    }
     setSelectedCell({ date, periodId, periodName: period?.name ?? '' });
   }
 
@@ -45,6 +50,24 @@ export default function TimetablePage() {
     }
     reload?.();
     setSelectedCell(null);
+  }
+
+  async function handleCancel(id: string) {
+    await fetch(`/api/reservations/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'cancelled' }),
+    });
+    reload?.();
+  }
+
+  async function handleEdit(id: string, data: { className: string; grade: string; purpose: string; type: string }) {
+    await fetch(`/api/reservations/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    reload?.();
   }
 
   async function handleConflictResolve(data: { className: string; grade: string; purpose: string }) {
@@ -93,20 +116,24 @@ export default function TimetablePage() {
           </div>
         )}
       </main>
+
       {selectedCell && (
         <ReservationModal date={selectedCell.date} periodName={selectedCell.periodName} onClose={() => setSelectedCell(null)} onSubmit={handleReserve} />
       )}
+      {selectedReservation && user && (
+        <ReservationDetailModal
+          reservation={selectedReservation.reservation}
+          periodName={selectedReservation.periodName}
+          isOwner={selectedReservation.reservation.teacherId === user.id}
+          isAdmin={user.role === 'admin'}
+          onClose={() => setSelectedReservation(null)}
+          onCancel={handleCancel}
+          onEdit={handleEdit}
+        />
+      )}
       {conflict && (
-        <ConflictModal conflict={conflict.info as ConflictInfo} onClose={() => setConflict(null)} onNegotiationComplete={handleConflictResolve} />
+        <ConflictModal conflict={conflict.info} onClose={() => setConflict(null)} onNegotiationComplete={handleConflictResolve} />
       )}
     </div>
   );
-}
-
-interface ConflictInfo {
-  id: string;
-  teacherId: string;
-  className: string;
-  grade: string;
-  type: string;
 }
