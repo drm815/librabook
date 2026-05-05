@@ -19,7 +19,7 @@ function parseClassInput(value: string): { grade: string; className: string } {
 export default function ReservationModal({ date, periodName, onClose, onSubmit }: Props) {
   const [classInput, setClassInput] = useState('');
   const [purpose, setPurpose] = useState('');
-  const [type] = useState('class');
+  const [type, setType] = useState('class');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -44,6 +44,22 @@ export default function ReservationModal({ date, periodName, onClose, onSubmit }
         <h2 className="text-lg font-bold mb-1">수업 예약 신청</h2>
         <p className="text-sm text-gray-500 mb-4">{date} · {periodName}</p>
         <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="flex gap-2">
+            {([
+              { value: 'class', label: '수업', bg: 'bg-[#B8E0D2]', active: 'ring-2 ring-[#6bbfa0]' },
+              { value: 'event', label: '행사', bg: 'bg-[#C9B8E8]', active: 'ring-2 ring-[#9b82d4]' },
+              { value: 'self-study', label: '자율', bg: 'bg-[#F9C4D2]', active: 'ring-2 ring-[#e8899a]' },
+            ] as const).map(t => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => setType(t.value)}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${t.bg} ${type === t.value ? t.active : 'opacity-50'}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
           <input
             placeholder="학반 또는 수업명 (예: 3-1, 독서토론반)"
             value={classInput}

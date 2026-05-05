@@ -38,7 +38,9 @@ export default function TimetableCell({ reservation, isHoliday, onClick, userRol
       onClick={onClick}
       className={`h-10 w-full rounded text-xs font-medium truncate px-1 ${colorClass}`}
     >
-      {reservation.type === 'class' && reservation.grade ? `${reservation.grade}반` : reservation.type === 'event' ? '행사' : '자율'}
+      {reservation.type === 'class'
+        ? (reservation.grade ? `${reservation.grade}-${reservation.className}` : reservation.className)
+        : reservation.type === 'event' ? '행사' : '자율'}
     </button>
   );
 }
