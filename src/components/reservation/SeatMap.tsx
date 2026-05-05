@@ -87,6 +87,10 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
               <div className="bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center" style={{ width: 130, height: 90 }}>
                 <span className="text-sm font-bold text-amber-600">북트레일러</span>
               </div>
+              {/* 소모임 공간 */}
+              <div className="bg-rose-50 border-2 border-rose-300 rounded-xl flex items-center justify-center" style={{ width: 130, height: 90 }}>
+                <span className="text-sm font-bold text-rose-500">소모임 공간</span>
+              </div>
             </div>
 
           </div>
