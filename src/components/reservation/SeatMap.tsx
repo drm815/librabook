@@ -94,8 +94,8 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
           {/* ── 우측 영역: 정보검색 + 무대/좌석 나란히 ── */}
           <div className="flex items-start gap-1">
-            {/* 정보검색 - 우측 좌석 왼쪽에 붙임, 높이 절반 */}
-            <div className="bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 self-start mt-10" style={{ height: 60 }}>
+            {/* 정보검색 - 무대 시작점부터 8번 좌석 첫 행까지 */}
+            <div className="bg-emerald-100 border-2 border-emerald-300 rounded-xl flex items-center justify-center px-2 self-start" style={{ height: 110 }}>
               <span className="text-xs font-bold text-emerald-700 [writing-mode:vertical-rl] tracking-widest">정보검색</span>
             </div>
             {/* 무대 + 우측 좌석 */}
