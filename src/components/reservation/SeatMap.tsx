@@ -53,7 +53,6 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
       {hasBoth ? (
         <div className="flex flex-col gap-2">
 
-          {/* 상단 행: 왼쪽 영역 + 우측 영역 */}
           <div className="flex items-start gap-16">
 
             {/* ── 왼쪽 영역 ── */}
@@ -80,13 +79,17 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
                 <span className="text-sm font-bold text-amber-700 [writing-mode:vertical-rl] tracking-widest">서 가</span>
               </div>
 
-              {/* 데스크 + 북트레일러 */}
+              {/* 데스크 + 북트레일러 + 소모임 공간 */}
               <div className="flex flex-col gap-6 mt-4">
                 <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-3 py-2">
                   <span className="text-xs font-bold text-sky-700">데 스 크</span>
                 </div>
                 <div className="bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center" style={{ width: 130, height: 90 }}>
                   <span className="text-sm font-bold text-amber-600">북트레일러</span>
+                </div>
+                {/* 소모임 공간: 북트레일러 아래 ~ 32번 좌석 시작점까지 가로 확장 */}
+                <div className="bg-rose-50 border-2 border-rose-300 rounded-xl flex items-center justify-center py-3" style={{ width: 290 }}>
+                  <span className="text-sm font-bold text-rose-500">소모임 공간</span>
                 </div>
               </div>
 
@@ -115,19 +118,6 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
               </div>
             </div>
 
-          </div>
-
-          {/* 하단 행: 소모임 공간 (좌측 서가 ~ 정보검색 박스 왼쪽까지) */}
-          {/* 전체 너비에서 우측(정보검색+무대+좌석) 너비를 뺀 영역 */}
-          <div className="flex gap-16">
-            <div className="bg-rose-50 border-2 border-rose-300 rounded-xl flex items-center justify-center py-3 flex-1">
-              <span className="text-sm font-bold text-rose-500">소모임 공간</span>
-            </div>
-            {/* 우측 영역과 너비 맞추기 위한 빈 공간 */}
-            <div className="flex gap-1 invisible">
-              <div style={{ width: 32 }} />
-              <div style={{ width: rightCols * 36 + (rightCols - 1) * 6 }} />
-            </div>
           </div>
 
         </div>
