@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, COOKIE_NAME } from '@/lib/auth';
 
-const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/users'];
+const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/users', '/api/reservations', '/api/seat-reservations', '/api/periods', '/api/seats'];
+const PUBLIC_EXACT = ['/'];
 const ADMIN_PATHS = ['/admin'];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  if (PUBLIC_EXACT.includes(pathname)) return NextResponse.next();
   if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
     return NextResponse.next();
   }
