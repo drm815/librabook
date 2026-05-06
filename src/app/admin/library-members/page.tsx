@@ -18,9 +18,17 @@ export default function AdminLibraryMembersPage() {
 
   async function load() {
     setLoading(true);
-    const res = await fetch('/api/library-members');
-    const data = await res.json();
-    setMembers(data);
+    try {
+      const res = await fetch('/api/library-members');
+      const data = await res.json();
+      if (res.ok && Array.isArray(data)) {
+        setMembers(data);
+      } else {
+        setError(data.error ?? '데이터를 불러올 수 없습니다.');
+      }
+    } catch {
+      setError('네트워크 오류가 발생했습니다.');
+    }
     setLoading(false);
   }
 
