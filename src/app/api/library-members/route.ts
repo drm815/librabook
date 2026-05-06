@@ -13,7 +13,12 @@ export async function GET() {
     .select('*')
     .order('created_at', { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  return NextResponse.json(data.map(r => ({
+    id: r.id,
+    studentId: r.student_id,
+    name: r.name,
+    createdAt: r.created_at,
+  })));
 }
 
 export async function POST(req: NextRequest) {
