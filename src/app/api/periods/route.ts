@@ -46,8 +46,11 @@ export async function POST(req: NextRequest) {
 
   // 삭제 후 실제로 비었는지 확인
   const { data: afterDelete } = await supabase.from('periods').select('id');
-  if ((afterDelete ?? []).length > 0) {
-    return NextResponse.json({ error: '기존 교시 삭제에 실패했습니다. RLS 정책을 확인해주세요.' }, { status: 500 });
+  const remaining = (afterDelete ?? []).length;
+  if (remaining > 0) {
+    return NextResponse.json({
+      error: `삭제 후 ${remaining}개 행이 남아있습니다. (before: ${existingIds.length}개) Supabase 콘솔에서 periods 테이블의 RLS DELETE 정책을 확인해주세요.`
+    }, { status: 500 });
   }
 
   const { error } = await supabase.from('periods').insert(
@@ -55,5 +58,5 @@ export async function POST(req: NextRequest) {
   );
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, inserted: periods.length });
 }
