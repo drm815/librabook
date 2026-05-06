@@ -22,9 +22,9 @@ export default function LoginForm() {
       const { role: r, name: n, subject: s, studentId: sid } = JSON.parse(saved);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (r) setRole(r);
-      if (n) setName(n);
-      if (s) setSubject(s);
-      if (sid) setStudentId(sid);
+      if (typeof n === 'string') setName(n);
+      if (typeof s === 'string') setSubject(s);
+      if (typeof sid === 'string') setStudentId(sid);
     }
   }, []);
 
