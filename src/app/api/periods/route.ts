@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   const periods: { name: string; startTime: string; endTime: string }[] = await req.json();
 
-  await supabase.from('periods').delete().neq('id', '');
+  await supabase.from('periods').delete().not('id', 'is', null);
 
   const { error } = await supabase.from('periods').insert(
     periods.map(p => ({ name: p.name, start_time: p.startTime, end_time: p.endTime }))
