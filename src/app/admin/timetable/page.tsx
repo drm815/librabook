@@ -6,6 +6,7 @@ import CalendarGrid from '@/components/timetable/CalendarGrid';
 import ReservationModal from '@/components/reservation/ReservationModal';
 import ReservationDetailModal from '@/components/reservation/ReservationDetailModal';
 import ConflictModal from '@/components/reservation/ConflictModal';
+import BulkReservationModal from '@/components/reservation/BulkReservationModal';
 import { useTimetable } from '@/hooks/useTimetable';
 import { useAuth } from '@/hooks/useAuth';
 import type { Reservation } from '@/types';
@@ -17,6 +18,7 @@ export default function AdminTimetablePage() {
   const { user } = useAuth();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{ date: string; periodId: string; periodName: string } | null>(null);
   const [selectedReservation, setSelectedReservation] = useState<{ reservation: Reservation; periodName: string } | null>(null);
   const [conflict, setConflict] = useState<{ info: Reservation; date: string; periodId: string } | null>(null);
@@ -95,10 +97,18 @@ export default function AdminTimetablePage() {
             <h2 className="text-lg font-bold">{format(currentDate, 'yyyy년 M월')} 예약 현황</h2>
             <button onClick={() => setCurrentDate(d => addMonths(d, 1))} className="p-1.5 rounded-lg hover:bg-gray-100">▶</button>
           </div>
-          <div className="flex gap-2 text-xs">
-            <span className="px-2 py-1 bg-[#B8E0D2] rounded">수업</span>
-            <span className="px-2 py-1 bg-[#C9B8E8] rounded">행사</span>
-            <span className="px-2 py-1 bg-[#F9C4D2] rounded">자율</span>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2 text-xs">
+              <span className="px-2 py-1 bg-[#B8E0D2] rounded">수업</span>
+              <span className="px-2 py-1 bg-[#C9B8E8] rounded">행사</span>
+              <span className="px-2 py-1 bg-[#F9C4D2] rounded">자율</span>
+            </div>
+            <button
+              onClick={() => setBulkOpen(true)}
+              className="px-3 py-1.5 bg-[#E8899A] text-white text-xs font-medium rounded-lg hover:bg-[#d4758a] transition-colors"
+            >
+              반복 예약
+            </button>
           </div>
         </div>
         {loading ? (
@@ -142,6 +152,14 @@ export default function AdminTimetablePage() {
       )}
       {conflict && (
         <ConflictModal conflict={conflict.info} onClose={() => setConflict(null)} onNegotiationComplete={handleConflictResolve} />
+      )}
+      {bulkOpen && (
+        <BulkReservationModal
+          days={days}
+          periods={periods}
+          onClose={() => setBulkOpen(false)}
+          onSuccess={() => reload?.()}
+        />
       )}
     </div>
   );
