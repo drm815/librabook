@@ -4,7 +4,7 @@ import type { LibraryMember } from '@/types';
 
 function parseStudentId(studentId: string) {
   const grade = studentId[0] ?? '?';
-  const classNum = studentId[1] ?? '?';
+  const classNum = String(parseInt(studentId.slice(1, 3) ?? '0', 10));
   return { grade, classNum };
 }
 
