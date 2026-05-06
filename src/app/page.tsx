@@ -121,9 +121,27 @@ export default function Home() {
       </header>
 
       <main className="max-w-4xl mx-auto p-6">
-        <div className="mb-6">
-          <h2 className="text-base font-bold text-gray-700">이번 주 도서관 현황</h2>
-          <p className="text-xs text-gray-400 mt-0.5">{weekDates[0]?.date} ~ {weekDates[4]?.date}</p>
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <h2 className="text-base font-bold text-gray-700">이번 주 도서관 현황</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{weekDates[0]?.date} ~ {weekDates[4]?.date}</p>
+          </div>
+          {!user && (
+            <button
+              onClick={() => router.push('/login')}
+              className="text-sm bg-[#E8899A] text-white px-4 py-1.5 rounded-lg font-medium"
+            >
+              로그인
+            </button>
+          )}
+          {user && (
+            <button
+              onClick={() => router.push('/timetable')}
+              className="text-sm text-[#E8899A] font-medium"
+            >
+              타임테이블 →
+            </button>
+          )}
         </div>
 
         {loading ? (
