@@ -32,31 +32,23 @@ export async function POST(req: NextRequest) {
 
   const periods: { name: string; startTime: string; endTime: string }[] = await req.json();
 
-  // 기존 교시 전체 조회
-  const { data: existing, error: fetchError } = await supabase.from('periods').select('id');
-  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 });
-
-  const existingIds = (existing ?? []).map(r => r.id);
-
-  // 삭제
-  if (existingIds.length > 0) {
-    const { error: deleteError } = await supabase.from('periods').delete().in('id', existingIds);
-    if (deleteError) return NextResponse.json({ error: `삭제 실패: ${deleteError.message}` }, { status: 500 });
-  }
-
-  // 삭제 후 실제로 비었는지 확인
-  const { data: afterDelete } = await supabase.from('periods').select('id');
-  const remaining = (afterDelete ?? []).length;
-  if (remaining > 0) {
-    return NextResponse.json({
-      error: `삭제 후 ${remaining}개 행이 남아있습니다. (before: ${existingIds.length}개) Supabase 콘솔에서 periods 테이블의 RLS DELETE 정책을 확인해주세요.`
-    }, { status: 500 });
-  }
-
-  const { error } = await supabase.from('periods').insert(
-    periods.map(p => ({ name: p.name, start_time: p.startTime, end_time: p.endTime }))
-  );
+  // name 기준 upsert (unique constraint 활용)
+  const { error } = await supabase
+    .from('periods')
+    .upsert(
+      periods.map(p => ({ name: p.name, start_time: p.startTime, end_time: p.endTime })),
+      { onConflict: 'name' }
+    );
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true, inserted: periods.length });
+
+  // upsert에 없는 교시(삭제된 교시) 제거
+  const { data: current } = await supabase.from('periods').select('id, name');
+  const keepNames = new Set(periods.map(p => p.name));
+  const toDelete = (current ?? []).filter(r => !keepNames.has(r.name)).map(r => r.id);
+  if (toDelete.length > 0) {
+    await supabase.from('periods').delete().in('id', toDelete);
+  }
+
+  return NextResponse.json({ success: true });
 }
