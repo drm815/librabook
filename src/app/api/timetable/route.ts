@@ -49,9 +49,17 @@ export async function POST(req: NextRequest) {
     return { month: monthStr, date: dateStr, day_of_week: dayOfWeek, is_holiday: isHoliday };
   });
 
+  // 해당 월 기존 데이터 삭제 후 재insert (중복 방지)
+  const { error: deleteError } = await supabase
+    .from('timetable_config')
+    .delete()
+    .eq('month', monthStr);
+
+  if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
+
   const { error } = await supabase
     .from('timetable_config')
-    .upsert(rows, { onConflict: 'date' });
+    .insert(rows);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });
