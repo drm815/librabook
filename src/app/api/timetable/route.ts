@@ -49,18 +49,31 @@ export async function POST(req: NextRequest) {
     return { month: monthStr, date: dateStr, day_of_week: dayOfWeek, is_holiday: isHoliday };
   });
 
-  // 해당 월 기존 데이터 삭제 후 재insert (중복 방지)
-  const { error: deleteError } = await supabase
+  // 기존 날짜 조회
+  const { data: existing } = await supabase
     .from('timetable_config')
-    .delete()
+    .select('date')
     .eq('month', monthStr);
 
-  if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 });
+  const existingDates = new Set((existing ?? []).map(r => r.date));
 
-  const { error } = await supabase
-    .from('timetable_config')
-    .insert(rows);
+  const toInsert = rows.filter(r => !existingDates.has(r.date));
+  const toUpdate = rows.filter(r => existingDates.has(r.date));
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // 새 날짜만 insert
+  if (toInsert.length > 0) {
+    const { error: insertError } = await supabase.from('timetable_config').insert(toInsert);
+    if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 });
+  }
+
+  // 기존 날짜는 is_holiday만 업데이트
+  for (const row of toUpdate) {
+    const { error: updateError } = await supabase
+      .from('timetable_config')
+      .update({ is_holiday: row.is_holiday })
+      .eq('date', row.date);
+    if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
   return NextResponse.json({ success: true });
 }
