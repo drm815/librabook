@@ -32,7 +32,12 @@ export async function POST(req: NextRequest) {
 
   const periods: { name: string; startTime: string; endTime: string }[] = await req.json();
 
-  await supabase.from('periods').delete().not('id', 'is', null);
+  // 기존 교시 id 목록 조회 후 삭제
+  const { data: existing } = await supabase.from('periods').select('id');
+  const existingIds = (existing ?? []).map(r => r.id);
+  if (existingIds.length > 0) {
+    await supabase.from('periods').delete().in('id', existingIds);
+  }
 
   const { error } = await supabase.from('periods').insert(
     periods.map(p => ({ name: p.name, start_time: p.startTime, end_time: p.endTime }))
