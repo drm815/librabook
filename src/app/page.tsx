@@ -105,19 +105,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#FDF6F0]">
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-gray-100 px-6 py-4">
         <h1 className="text-lg font-bold text-[#333]">LibraBook</h1>
-        <div className="flex items-center gap-3">
-          {user ? (
-            <button onClick={() => router.push('/timetable')} className="text-sm text-[#E8899A] font-medium">
-              타임테이블 →
-            </button>
-          ) : (
-            <button onClick={() => router.push('/login')} className="text-sm bg-[#E8899A] text-white px-4 py-1.5 rounded-lg font-medium">
-              로그인
-            </button>
-          )}
-        </div>
       </header>
 
       <main className="max-w-4xl mx-auto p-6">
