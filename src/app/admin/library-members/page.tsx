@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import type { LibraryMember } from '@/types';
 
 function parseStudentId(studentId: string) {
@@ -15,6 +16,8 @@ export default function AdminLibraryMembersPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     setLoading(true);
@@ -56,6 +59,58 @@ export default function AdminLibraryMembersPage() {
     setSubmitting(false);
   }
 
+  async function handleExcelUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError('');
+    setUploading(true);
+
+    const buffer = await file.arrayBuffer();
+    const wb = XLSX.read(buffer, { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 });
+
+    // 첫 행이 헤더인지 확인 (학년/반/번호/이름/... 포함 시 스킵)
+    const dataRows = (rows as string[][]).filter((row, i) => {
+      if (i === 0 && String(row[0]).includes('학년')) return false;
+      return row.length >= 4 && row[0] !== undefined && row[1] !== undefined;
+    });
+
+    const members = dataRows.map(row => {
+      const grade = String(row[0]).trim();
+      const classNum = String(row[1]).trim().padStart(2, '0');
+      const num = String(row[2]).trim().padStart(2, '0');
+      const name = String(row[3]).trim();
+      const studentId = `${grade}${classNum}${num}`;
+      return { studentId, name };
+    }).filter(m => m.name && m.studentId.length === 5);
+
+    if (members.length === 0) {
+      setError('업로드할 데이터가 없습니다. 형식을 확인해주세요.');
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    let inserted = 0;
+    let skipped = 0;
+    for (const m of members) {
+      const res = await fetch('/api/library-members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(m),
+      });
+      if (res.ok) inserted++;
+      else skipped++;
+    }
+
+    await load();
+    setSuccess(`${inserted}명 등록 완료${skipped > 0 ? `, ${skipped}명 중복 스킵` : ''}`);
+    setTimeout(() => setSuccess(''), 3000);
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
   async function handleDelete(id: string, name: string) {
     if (!confirm(`${name} 학생을 도서부 명단에서 삭제할까요?`)) return;
     await fetch(`/api/library-members/${id}`, { method: 'DELETE' });
@@ -68,6 +123,27 @@ export default function AdminLibraryMembersPage() {
 
       <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
         <h2 className="font-bold text-gray-700 mb-4">도서부원 등록</h2>
+
+        {/* 엑셀 업로드 */}
+        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleExcelUpload}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50"
+          >
+            {uploading ? '업로드 중...' : '엑셀 파일 업로드'}
+          </button>
+          <span className="text-xs text-gray-400">학년 / 반 / 번호 / 이름 / 휴대폰번호 순서</span>
+        </div>
+
         <form onSubmit={handleAdd} className="flex gap-3 flex-wrap">
           <input
             placeholder="학번 (예: 20301 → 2학년 3반 1번)"
