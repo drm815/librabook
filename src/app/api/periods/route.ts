@@ -32,11 +32,22 @@ export async function POST(req: NextRequest) {
 
   const periods: { name: string; startTime: string; endTime: string }[] = await req.json();
 
-  // 기존 교시 id 목록 조회 후 삭제
-  const { data: existing } = await supabase.from('periods').select('id');
+  // 기존 교시 전체 조회
+  const { data: existing, error: fetchError } = await supabase.from('periods').select('id');
+  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 });
+
   const existingIds = (existing ?? []).map(r => r.id);
+
+  // 삭제
   if (existingIds.length > 0) {
-    await supabase.from('periods').delete().in('id', existingIds);
+    const { error: deleteError } = await supabase.from('periods').delete().in('id', existingIds);
+    if (deleteError) return NextResponse.json({ error: `삭제 실패: ${deleteError.message}` }, { status: 500 });
+  }
+
+  // 삭제 후 실제로 비었는지 확인
+  const { data: afterDelete } = await supabase.from('periods').select('id');
+  if ((afterDelete ?? []).length > 0) {
+    return NextResponse.json({ error: '기존 교시 삭제에 실패했습니다. RLS 정책을 확인해주세요.' }, { status: 500 });
   }
 
   const { error } = await supabase.from('periods').insert(

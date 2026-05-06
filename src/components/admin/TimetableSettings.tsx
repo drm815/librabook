@@ -84,7 +84,12 @@ export default function TimetableSettings() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(periods),
     });
-    setMessage(res.ok ? '교시 설정 저장 완료 (다음달 생성 시에도 자동 적용됩니다)' : '오류 발생');
+    if (res.ok) {
+      setMessage('교시 설정 저장 완료 (다음달 생성 시에도 자동 적용됩니다)');
+    } else {
+      const data = await res.json();
+      setMessage(`오류: ${data.error ?? '저장 실패'}`);
+    }
     setLoading(false);
   }
 
