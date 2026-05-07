@@ -81,7 +81,7 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
 
               {/* 데스크 + 북트레일러 + 소모임 공간 */}
               <div className="flex flex-col gap-6 mt-4">
-                <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-3 py-2" style={{ width: 290 }}>
+                <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-3 py-2" style={{ width: 250 }}>
                   <span className="text-xs font-bold text-sky-700">데 스 크</span>
                 </div>
                 <div className="flex gap-2">
