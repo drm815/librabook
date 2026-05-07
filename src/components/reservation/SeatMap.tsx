@@ -84,8 +84,13 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
                 <div className="bg-sky-100 border-2 border-sky-300 rounded-xl flex items-center justify-center px-3 py-2">
                   <span className="text-xs font-bold text-sky-700">데 스 크</span>
                 </div>
-                <div className="bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center" style={{ width: 130, height: 90 }}>
-                  <span className="text-sm font-bold text-amber-600">북트레일러</span>
+                <div className="flex gap-2">
+                  <div className="bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center" style={{ width: 130, height: 90 }}>
+                    <span className="text-sm font-bold text-amber-600">북트레일러</span>
+                  </div>
+                  <div className="bg-green-50 border-2 border-green-300 rounded-xl flex items-center justify-center" style={{ width: 100, height: 90 }}>
+                    <span className="text-sm font-bold text-green-600 [writing-mode:vertical-rl] tracking-widest">신착도서</span>
+                  </div>
                 </div>
                 {/* 소모임 공간: 북트레일러 아래 ~ 32번 좌석 시작점까지 가로 확장 */}
                 <div className="bg-rose-50 border-2 border-rose-300 rounded-xl flex items-center justify-center py-3" style={{ width: 290 }}>
