@@ -45,8 +45,8 @@ export default function SeatMap({ seats, reservedSeats, onSeatClick, canReserve 
   const rightRows = Math.ceil(rightSeats.length / rightCols);
 
   return (
-    <div className="w-full overflow-x-auto flex justify-center">
-      <div className="inline-flex flex-col items-stretch">
+    <div className="w-full overflow-x-auto">
+      <div className="inline-flex flex-col items-stretch min-w-max mx-auto">
       {/* 입구 */}
       <div className="bg-gray-200 rounded-lg py-2 text-center text-xs text-gray-500 mb-3">▼ 입구</div>
 
