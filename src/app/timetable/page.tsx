@@ -6,6 +6,7 @@ import CalendarGrid from '@/components/timetable/CalendarGrid';
 import ReservationModal from '@/components/reservation/ReservationModal';
 import ReservationDetailModal from '@/components/reservation/ReservationDetailModal';
 import ConflictModal from '@/components/reservation/ConflictModal';
+import BulkReservationModal from '@/components/reservation/BulkReservationModal';
 import { useTimetable } from '@/hooks/useTimetable';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -21,6 +22,7 @@ export default function TimetablePage() {
   const [selectedCell, setSelectedCell] = useState<{ date: string; periodId: string; periodName: string } | null>(null);
   const [selectedReservation, setSelectedReservation] = useState<{ reservation: Reservation; periodName: string } | null>(null);
   const [conflict, setConflict] = useState<{ info: Reservation; date: string; periodId: string } | null>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   function handleCellClick(date: string, periodId: string, existing?: Reservation) {
     if (!user || user.role === 'student') return;
@@ -103,10 +105,20 @@ export default function TimetablePage() {
             <h2 className="text-xl font-bold">{format(currentDate, 'yyyy년 M월')}</h2>
             <button onClick={() => setCurrentDate(d => addMonths(d, 1))} className="p-2 rounded-lg hover:bg-gray-100">▶</button>
           </div>
-          <div className="flex gap-2 text-xs">
-            <span className="px-2 py-1 bg-[#B8E0D2] rounded">수업</span>
-            <span className="px-2 py-1 bg-[#C9B8E8] rounded">행사</span>
-            <span className="px-2 py-1 bg-[#F9C4D2] rounded">자율</span>
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2 text-xs">
+              <span className="px-2 py-1 bg-[#B8E0D2] rounded">수업</span>
+              <span className="px-2 py-1 bg-[#C9B8E8] rounded">행사</span>
+              <span className="px-2 py-1 bg-[#F9C4D2] rounded">자율</span>
+            </div>
+            {user?.role === 'teacher' && (
+              <button
+                onClick={() => setBulkOpen(true)}
+                className="bg-[#E8899A] text-white px-4 py-1.5 rounded-lg text-sm font-medium"
+              >
+                반복 예약
+              </button>
+            )}
           </div>
         </div>
         {loading ? (
@@ -138,6 +150,14 @@ export default function TimetablePage() {
       )}
       {conflict && (
         <ConflictModal conflict={conflict.info} onClose={() => setConflict(null)} onNegotiationComplete={handleConflictResolve} />
+      )}
+      {bulkOpen && (
+        <BulkReservationModal
+          days={days}
+          periods={periods}
+          onClose={() => setBulkOpen(false)}
+          onSuccess={() => { reload?.(); }}
+        />
       )}
     </div>
   );
