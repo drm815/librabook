@@ -57,6 +57,8 @@ export interface SeatReservation {
   seatId: string;
   studentId: string;
   purpose: string;
+  startTime?: string;
+  endTime?: string;
   status: ReservationStatus;
   createdAt: string;
 }

@@ -17,6 +17,8 @@ export default function StudentReservePage() {
   const [reservedSeats, setReservedSeats] = useState<{ seatId: string }[]>([]);
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [purpose, setPurpose] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const canReserve = isStudentReservationAllowed() && user?.role === 'student';
@@ -34,13 +36,15 @@ export default function StudentReservePage() {
     const res = await fetch('/api/seat-reservations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ seatId: selectedSeat.id, purpose }),
+      body: JSON.stringify({ seatId: selectedSeat.id, purpose, startTime, endTime }),
     });
     const data = await res.json();
     if (res.ok) {
       setMessage(`${selectedSeat.label} 좌석 예약 완료!`);
       setSelectedSeat(null);
       setPurpose('');
+      setStartTime('');
+      setEndTime('');
       const updated = await fetch(`/api/seat-reservations?date=${getCurrentKSTDate()}`).then(r => r.json());
       setReservedSeats(updated);
     } else {
@@ -118,15 +122,31 @@ export default function StudentReservePage() {
       {selectedSeat && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
-            <h2 className="font-bold mb-3">{selectedSeat.label} 좌석 예약</h2>
+            <h2 className="font-bold mb-4">{selectedSeat.label} 좌석 예약</h2>
             <input
               placeholder="이용 목적"
               value={purpose}
               onChange={e => setPurpose(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:border-[#E8899A]"
             />
+            <p className="text-xs text-gray-400 mb-2">사용 시간</p>
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="time"
+                value={startTime}
+                onChange={e => setStartTime(e.target.value)}
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
+              />
+              <span className="text-gray-400 text-sm">~</span>
+              <input
+                type="time"
+                value={endTime}
+                onChange={e => setEndTime(e.target.value)}
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
+              />
+            </div>
             <div className="flex gap-2">
-              <button onClick={() => setSelectedSeat(null)} className="flex-1 border border-gray-200 rounded-lg py-2 text-sm">취소</button>
+              <button onClick={() => { setSelectedSeat(null); setStartTime(''); setEndTime(''); }} className="flex-1 border border-gray-200 rounded-lg py-2 text-sm">취소</button>
               <button onClick={handleReserve} disabled={loading || !purpose} className="flex-1 bg-[#E8899A] text-white rounded-lg py-2 text-sm disabled:opacity-50">예약</button>
             </div>
           </div>

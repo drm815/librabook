@@ -23,6 +23,8 @@ export async function GET(req: NextRequest) {
     seatId: r.seat_id,
     studentId: r.student_id,
     purpose: r.purpose,
+    startTime: r.start_time,
+    endTime: r.end_time,
     status: r.status,
     createdAt: r.created_at,
   }));
@@ -40,10 +42,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '학생만 좌석 예약 가능' }, { status: 403 });
   }
   if (!isStudentReservationAllowed()) {
-    return NextResponse.json({ error: '좌석 예약은 07:00~13:10 사이에만 가능합니다.' }, { status: 400 });
+    return NextResponse.json({ error: '좌석 예약은 07:00~15:20 사이에만 가능합니다.' }, { status: 400 });
   }
 
-  const { seatId, purpose }: { seatId: string; purpose: string } = await req.json();
+  const { seatId, purpose, startTime, endTime }: { seatId: string; purpose: string; startTime?: string; endTime?: string } = await req.json();
   const today = getCurrentKSTDate();
 
   const { data: todayReservations, error: fetchError } = await supabase
@@ -66,6 +68,8 @@ export async function POST(req: NextRequest) {
     seat_id: seatId,
     student_id: session.userId,
     purpose,
+    start_time: startTime ?? null,
+    end_time: endTime ?? null,
     status: 'confirmed',
     created_at: new Date().toISOString(),
   });
