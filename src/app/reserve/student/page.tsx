@@ -98,11 +98,11 @@ export default function StudentReservePage() {
           <>
             <h1 className="text-xl font-bold mb-2">방과 후 좌석 예약</h1>
             <div className="mb-4 text-sm text-gray-500 space-y-0.5">
-              <p>{getCurrentKSTDate()}</p>
-              <p>· 예약 신청: 07:00 ~ 13:00</p>
+              <p>{getCurrentKSTDate()} · 당일 예약만 가능합니다</p>
+              <p>· 예약 신청: 07:00 ~ 15:20</p>
               <p>· 좌석 사용: ~ 16:20까지</p>
             </div>
-            {!canReserve && <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-700">예약 신청 시간이 아닙니다. (07:00~13:00)</div>}
+            {!canReserve && <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-700">예약 신청 시간이 아닙니다. (07:00~15:20)</div>}
             {message && <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-sm text-green-700">{message}</div>}
             <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col items-center">
               <SeatMap seats={seats} reservedSeats={reservedSeats} onSeatClick={setSelectedSeat} canReserve={canReserve} />
