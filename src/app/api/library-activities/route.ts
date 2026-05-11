@@ -7,6 +7,25 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: '로그인 필요' }, { status: 401 });
 
   const supabase = getSupabase();
+
+  // 관리자는 전체 조회 (users 테이블 join)
+  if (session.role === 'admin') {
+    const { data, error } = await supabase
+      .from('library_activities')
+      .select('*, users(name, student_id)')
+      .order('date', { ascending: false });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data.map(r => ({
+      id: r.id,
+      date: r.date,
+      content: r.content,
+      userId: r.user_id,
+      userName: (r.users as { name: string; student_id: string } | null)?.name ?? '',
+      studentId: (r.users as { name: string; student_id: string } | null)?.student_id ?? '',
+      createdAt: r.created_at,
+    })));
+  }
+
   const { data, error } = await supabase
     .from('library_activities')
     .select('*')
