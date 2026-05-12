@@ -6,6 +6,7 @@ interface Props {
   days: TimetableDay[];
   periods: Period[];
   getReservation: (date: string, periodId: string) => Reservation | undefined;
+  getCustomReservations?: (date: string) => Reservation[];
   onCellClick?: (date: string, periodId: string, reservation?: Reservation) => void;
   onCustomClick?: (date: string) => void;
   userRole?: string;
@@ -36,7 +37,7 @@ function getWeeks(days: TimetableDay[]) {
   return { weeks, allDays };
 }
 
-export default function CalendarGrid({ days, periods, getReservation, onCellClick, onCustomClick, userRole }: Props) {
+export default function CalendarGrid({ days, periods, getReservation, getCustomReservations, onCellClick, onCustomClick, userRole }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const { weeks, allDays } = getWeeks(days);
 
@@ -175,6 +176,35 @@ export default function CalendarGrid({ days, periods, getReservation, onCellClic
                 </button>
               );
             })}
+
+            {/* 기타 예약 */}
+            {(() => {
+              const customs = getCustomReservations?.(selectedDate) ?? [];
+              if (customs.length === 0) return null;
+              return (
+                <div className="mt-2 pt-2 border-t border-gray-200">
+                  <p className="text-[10px] text-gray-400 mb-1.5">기타 이용</p>
+                  {customs.map(r => (
+                    <div
+                      key={r.id}
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm ${TYPE_BG[r.type] ?? 'bg-gray-100'}`}
+                    >
+                      <div className="w-14 shrink-0">
+                        <div className="text-[10px] text-gray-600">
+                          {r.startTime && r.endTime ? `${r.startTime}~${r.endTime}` : '시간 미정'}
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium truncate">
+                          {r.grade ? `${r.grade}-${r.className}` : r.className}
+                        </div>
+                        <div className="text-[10px] text-gray-600 truncate">{r.purpose}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}

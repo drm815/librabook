@@ -15,7 +15,7 @@ import type { Reservation } from '@/types';
 export default function TimetablePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const month = format(currentDate, 'yyyy-MM');
-  const { days, periods, loading, getReservation, reload } = useTimetable(month);
+  const { days, periods, loading, getReservation, getCustomReservations, reload } = useTimetable(month);
   const { user, logout } = useAuth();
   const router = useRouter();
 
@@ -133,7 +133,7 @@ export default function TimetablePage() {
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-sm p-4">
-            <CalendarGrid days={days} periods={periods} getReservation={getReservation} onCellClick={handleCellClick} onCustomClick={date => setSelectedCell({ date, periodId: '', periodName: '', isCustom: true })} userRole={user?.role} />
+            <CalendarGrid days={days} periods={periods} getReservation={getReservation} getCustomReservations={getCustomReservations} onCellClick={handleCellClick} onCustomClick={date => setSelectedCell({ date, periodId: '', periodName: '', isCustom: true })} userRole={user?.role} />
           </div>
         )}
       </main>

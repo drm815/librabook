@@ -14,7 +14,7 @@ import type { Reservation } from '@/types';
 export default function AdminTimetablePage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const month = format(currentDate, 'yyyy-MM');
-  const { days, periods, loading, getReservation, reload } = useTimetable(month);
+  const { days, periods, loading, getReservation, getCustomReservations, reload } = useTimetable(month);
   const { user } = useAuth();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -118,7 +118,7 @@ export default function AdminTimetablePage() {
         {loading ? (
           <div className="text-center py-10 text-gray-400">불러오는 중...</div>
         ) : (
-          <CalendarGrid days={days} periods={periods} getReservation={getReservation} onCellClick={handleCellClick} onCustomClick={date => setSelectedCell({ date, periodId: '', periodName: '', isCustom: true })} userRole="admin" />
+          <CalendarGrid days={days} periods={periods} getReservation={getReservation} getCustomReservations={getCustomReservations} onCellClick={handleCellClick} onCustomClick={date => setSelectedCell({ date, periodId: '', periodName: '', isCustom: true })} userRole="admin" />
         )}
       </div>
 

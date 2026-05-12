@@ -27,5 +27,9 @@ export function useTimetable(month: string) {
     return reservations.find(r => r.date === date && r.periodId === periodId);
   }
 
-  return { days, periods, reservations, loading, getReservation, reload: fetchData };
+  function getCustomReservations(date: string) {
+    return reservations.filter(r => r.date === date && r.isCustomTime);
+  }
+
+  return { days, periods, reservations, loading, getReservation, getCustomReservations, reload: fetchData };
 }
