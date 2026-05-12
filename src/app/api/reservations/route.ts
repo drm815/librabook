@@ -32,6 +32,9 @@ export async function GET(req: NextRequest) {
     grade: r.grade,
     purpose: r.purpose,
     status: r.status,
+    isCustomTime: r.is_custom_time ?? false,
+    startTime: r.start_time ?? null,
+    endTime: r.end_time ?? null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   }));
@@ -51,29 +54,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '선생님만 수업 예약 가능' }, { status: 403 });
   }
 
-  const body: { date: string; periodId: string; type: string; className: string; grade: string; purpose: string } = await req.json();
+  const body: {
+    date: string;
+    periodId?: string;
+    type: string;
+    className: string;
+    grade: string;
+    purpose: string;
+    isCustomTime?: boolean;
+    startTime?: string;
+    endTime?: string;
+  } = await req.json();
 
+  // 교시 기반 예약만 중복 체크
+  if (!body.isCustomTime && body.periodId) {
+    const { data: existing } = await supabase
+      .from('reservations')
+      .select('id, teacher_id, class_name, grade, type')
+      .eq('date', body.date)
+      .eq('period_id', body.periodId)
+      .neq('status', 'cancelled')
+      .limit(1)
+      .single();
 
-  const { data: existing } = await supabase
-    .from('reservations')
-    .select('id, teacher_id, class_name, grade, type')
-    .eq('date', body.date)
-    .eq('period_id', body.periodId)
-    .neq('status', 'cancelled')
-    .limit(1)
-    .single();
-
-  if (existing) {
-    return NextResponse.json({
-      conflict: true,
-      existing: {
-        id: existing.id,
-        teacherId: existing.teacher_id,
-        className: existing.class_name,
-        grade: existing.grade,
-        type: existing.type,
-      },
-    }, { status: 409 });
+    if (existing) {
+      return NextResponse.json({
+        conflict: true,
+        existing: {
+          id: existing.id,
+          teacherId: existing.teacher_id,
+          className: existing.class_name,
+          grade: existing.grade,
+          type: existing.type,
+        },
+      }, { status: 409 });
+    }
   }
 
   const now = new Date().toISOString();
@@ -81,13 +96,16 @@ export async function POST(req: NextRequest) {
     .from('reservations')
     .insert({
       date: body.date,
-      period_id: body.periodId,
+      period_id: body.periodId ?? null,
       type: body.type,
       teacher_id: session.userId,
       class_name: body.className,
       grade: body.grade,
       purpose: body.purpose,
       status: 'confirmed',
+      is_custom_time: body.isCustomTime ?? false,
+      start_time: body.startTime ?? null,
+      end_time: body.endTime ?? null,
       created_at: now,
       updated_at: now,
     })

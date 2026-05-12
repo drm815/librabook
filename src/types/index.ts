@@ -39,6 +39,9 @@ export interface Reservation {
   grade: string;
   purpose: string;
   status: ReservationStatus;
+  isCustomTime?: boolean;
+  startTime?: string;
+  endTime?: string;
   createdAt: string;
   updatedAt: string;
 }
