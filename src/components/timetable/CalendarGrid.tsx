@@ -74,7 +74,8 @@ export default function CalendarGrid({ days, periods, getReservation, getCustomR
               const reservations = periods
                 .map(p => getReservation(day.date, p.id))
                 .filter(Boolean) as Reservation[];
-              const reservedCount = reservations.length;
+              const customReservations = getCustomReservations?.(day.date) ?? [];
+              const reservedCount = reservations.length + customReservations.length;
 
               return (
                 <button
@@ -111,7 +112,18 @@ export default function CalendarGrid({ days, periods, getReservation, getCustomR
                           title={r.type}
                         />
                       ))}
-                      <div className="w-full text-[10px] text-gray-400 mt-0.5">{reservedCount}교시 예약됨</div>
+                      {customReservations.map(r => (
+                        <span
+                          key={r.id}
+                          className={`inline-block w-2.5 h-2.5 rounded-sm border border-gray-400 ${TYPE_BG[r.type] ?? 'bg-gray-200'}`}
+                          title="기타"
+                        />
+                      ))}
+                      <div className="w-full text-[10px] text-gray-400 mt-0.5">
+                        {reservations.length > 0 && `${reservations.length}교시`}
+                        {reservations.length > 0 && customReservations.length > 0 && ' · '}
+                        {customReservations.length > 0 && `기타 ${customReservations.length}건`}
+                      </div>
                     </div>
                   )}
                 </button>
