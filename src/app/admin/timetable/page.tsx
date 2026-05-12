@@ -32,12 +32,16 @@ export default function AdminTimetablePage() {
     setSelectedCell({ date, periodId, periodName: period?.name ?? '' });
   }
 
-  async function handleReserve(data: { className: string; grade: string; purpose: string; type: string }) {
+  async function handleReserve(data: { className: string; grade: string; purpose: string; type: string; isCustomTime?: boolean; startTime?: string; endTime?: string }) {
     if (!selectedCell) return;
     const res = await fetch('/api/reservations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, date: selectedCell.date, periodId: selectedCell.periodId }),
+      body: JSON.stringify({
+        ...data,
+        date: selectedCell.date,
+        periodId: data.isCustomTime ? undefined : selectedCell.periodId,
+      }),
     });
     if (res.status === 409) {
       const { existing } = await res.json();
