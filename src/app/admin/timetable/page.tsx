@@ -19,7 +19,7 @@ export default function AdminTimetablePage() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
-  const [selectedCell, setSelectedCell] = useState<{ date: string; periodId: string; periodName: string } | null>(null);
+  const [selectedCell, setSelectedCell] = useState<{ date: string; periodId: string; periodName: string; isCustom?: boolean } | null>(null);
   const [selectedReservation, setSelectedReservation] = useState<{ reservation: Reservation; periodName: string } | null>(null);
   const [conflict, setConflict] = useState<{ info: Reservation; date: string; periodId: string } | null>(null);
 
@@ -118,7 +118,7 @@ export default function AdminTimetablePage() {
         {loading ? (
           <div className="text-center py-10 text-gray-400">불러오는 중...</div>
         ) : (
-          <CalendarGrid days={days} periods={periods} getReservation={getReservation} onCellClick={handleCellClick} userRole="admin" />
+          <CalendarGrid days={days} periods={periods} getReservation={getReservation} onCellClick={handleCellClick} onCustomClick={date => setSelectedCell({ date, periodId: '', periodName: '', isCustom: true })} userRole="admin" />
         )}
       </div>
 
@@ -141,7 +141,7 @@ export default function AdminTimetablePage() {
       </div>
 
       {selectedCell && (
-        <ReservationModal date={selectedCell.date} periodName={selectedCell.periodName} onClose={() => setSelectedCell(null)} onSubmit={handleReserve} />
+        <ReservationModal date={selectedCell.date} periodName={selectedCell.periodName} defaultCustomTime={selectedCell.isCustom} onClose={() => setSelectedCell(null)} onSubmit={handleReserve} />
       )}
       {selectedReservation && user && (
         <ReservationDetailModal

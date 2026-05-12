@@ -7,6 +7,7 @@ interface Props {
   periods: Period[];
   getReservation: (date: string, periodId: string) => Reservation | undefined;
   onCellClick?: (date: string, periodId: string, reservation?: Reservation) => void;
+  onCustomClick?: (date: string) => void;
   userRole?: string;
 }
 
@@ -35,7 +36,7 @@ function getWeeks(days: TimetableDay[]) {
   return { weeks, allDays };
 }
 
-export default function CalendarGrid({ days, periods, getReservation, onCellClick, userRole }: Props) {
+export default function CalendarGrid({ days, periods, getReservation, onCellClick, onCustomClick, userRole }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const { weeks, allDays } = getWeeks(days);
 
@@ -126,7 +127,17 @@ export default function CalendarGrid({ days, periods, getReservation, onCellClic
             <h3 className="font-bold text-sm text-gray-700">
               {selectedDate.slice(5).replace('-', '/')} ({selectedDay.dayOfWeek}) 교시별 현황
             </h3>
-            <button onClick={() => setSelectedDate(null)} className="text-xs text-gray-400 hover:text-gray-600">닫기</button>
+            <div className="flex items-center gap-2">
+              {(userRole === 'teacher' || userRole === 'admin') && (
+                <button
+                  onClick={() => onCustomClick?.(selectedDate)}
+                  className="text-xs bg-[#E8899A] text-white px-3 py-1 rounded-lg font-medium"
+                >
+                  + 기타 이용 신청
+                </button>
+              )}
+              <button onClick={() => setSelectedDate(null)} className="text-xs text-gray-400 hover:text-gray-600">닫기</button>
+            </div>
           </div>
           <div className="space-y-1.5">
             {periods.map(period => {

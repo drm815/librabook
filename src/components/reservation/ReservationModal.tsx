@@ -4,6 +4,7 @@ import { useState } from 'react';
 interface Props {
   date: string;
   periodName: string;
+  defaultCustomTime?: boolean;
   onClose: () => void;
   onSubmit: (data: { className: string; grade: string; purpose: string; type: string; isCustomTime?: boolean; startTime?: string; endTime?: string }) => Promise<void>;
 }
@@ -14,11 +15,11 @@ function parseClassInput(value: string): { grade: string; className: string } {
   return { grade: '', className: value };
 }
 
-export default function ReservationModal({ date, periodName, onClose, onSubmit }: Props) {
+export default function ReservationModal({ date, periodName, defaultCustomTime, onClose, onSubmit }: Props) {
   const [classInput, setClassInput] = useState('');
   const [purpose, setPurpose] = useState('');
   const [type, setType] = useState('class');
-  const [isCustomTime, setIsCustomTime] = useState(false);
+  const [isCustomTime, setIsCustomTime] = useState(defaultCustomTime ?? false);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [loading, setLoading] = useState(false);
