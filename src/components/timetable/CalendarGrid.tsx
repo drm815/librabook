@@ -137,20 +137,20 @@ export default function CalendarGrid({ days, periods, getReservation, getCustomR
       {selectedDate && selectedDay && (
         <div className="mt-4 bg-gray-50 rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-sm text-gray-700">
-              {selectedDate.slice(5).replace('-', '/')} ({selectedDay.dayOfWeek}) 교시별 현황
-            </h3>
             <div className="flex items-center gap-2">
+              <h3 className="font-bold text-sm text-gray-700">
+                {selectedDate.slice(5).replace('-', '/')} ({selectedDay.dayOfWeek}) 교시별 현황
+              </h3>
               {(userRole === 'teacher' || userRole === 'admin') && (
                 <button
                   onClick={() => onCustomClick?.(selectedDate)}
-                  className="text-xs bg-[#E8899A] text-white px-3 py-1 rounded-lg font-medium"
+                  className="text-xs bg-[#E8899A] text-white px-3 py-1 rounded-full font-semibold shadow-sm hover:bg-[#d9718a] transition-colors"
                 >
                   + 기타 이용 신청
                 </button>
               )}
-              <button onClick={() => setSelectedDate(null)} className="text-xs text-gray-400 hover:text-gray-600">닫기</button>
             </div>
+            <button onClick={() => setSelectedDate(null)} className="text-xs text-gray-400 hover:text-gray-600">닫기</button>
           </div>
           <div className="space-y-1.5">
             {periods.map(period => {
