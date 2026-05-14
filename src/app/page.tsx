@@ -15,13 +15,13 @@ interface SeatStatus {
   total: number;
 }
 
-function getThisWeekDates(): { date: string; dow: string }[] {
+function getWeekDates(weekOffset: number): { date: string; dow: string }[] {
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   const now = new Date();
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const dow = kst.getUTCDay();
   const monday = new Date(kst);
-  monday.setUTCDate(kst.getUTCDate() - (dow === 0 ? 6 : dow - 1));
+  monday.setUTCDate(kst.getUTCDate() - (dow === 0 ? 6 : dow - 1) + weekOffset * 7);
 
   return Array.from({ length: 5 }, (_, i) => {
     const d = new Date(monday);
@@ -39,9 +39,10 @@ function getTodayKST(): string {
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
-  const weekDates = getThisWeekDates();
   const today = getTodayKST();
-  const monthStr = today.slice(0, 7);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const weekDates = getWeekDates(weekOffset);
+  const monthStr = weekDates[0].date.slice(0, 7);
 
   const [classReservations, setClassReservations] = useState<DayReservations[]>([]);
   const [seatStatuses, setSeatStatuses] = useState<SeatStatus[]>([]);
@@ -51,6 +52,7 @@ export default function Home() {
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       const [periodsRes, seatsRes, reservationsRes] = await Promise.all([
         fetch('/api/periods'),
         fetch('/api/seats'),
@@ -95,7 +97,7 @@ export default function Home() {
     }
     void load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [weekOffset]);
 
   const TYPE_COLOR: Record<string, string> = {
     class: 'bg-[#B8E0D2]',
@@ -112,8 +114,34 @@ export default function Home() {
       <main className="max-w-4xl mx-auto p-6">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h2 className="text-base font-bold text-gray-700">이번 주 도서관 현황</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{weekDates[0]?.date} ~ {weekDates[4]?.date}</p>
+            <h2 className="text-base font-bold text-gray-700">
+              {weekOffset === 0 ? '이번 주' : weekOffset === 1 ? '다음 주' : weekOffset === -1 ? '지난 주' : `${weekOffset > 0 ? '+' : ''}${weekOffset}주`} 도서관 현황
+            </h2>
+            <div className="flex items-center gap-2 mt-0.5">
+              <button
+                onClick={() => setWeekOffset(o => o - 1)}
+                className="text-gray-400 hover:text-gray-600 text-sm leading-none"
+                aria-label="이전 주"
+              >
+                ‹
+              </button>
+              <p className="text-xs text-gray-400">{weekDates[0]?.date} ~ {weekDates[4]?.date}</p>
+              <button
+                onClick={() => setWeekOffset(o => o + 1)}
+                className="text-gray-400 hover:text-gray-600 text-sm leading-none"
+                aria-label="다음 주"
+              >
+                ›
+              </button>
+              {weekOffset !== 0 && (
+                <button
+                  onClick={() => setWeekOffset(0)}
+                  className="text-xs text-[#E8899A] hover:underline"
+                >
+                  오늘
+                </button>
+              )}
+            </div>
           </div>
           {!user && (
             <button
