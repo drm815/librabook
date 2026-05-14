@@ -146,7 +146,7 @@ export default function CalendarGrid({ days, periods, getReservation, getCustomR
                   onClick={() => onCustomClick?.(selectedDate)}
                   className="text-xs bg-[#E8899A] text-white px-3 py-1 rounded-full font-semibold shadow-sm hover:bg-[#d9718a] transition-colors"
                 >
-                  + 기타 이용 신청
+                  + 기타 시간 이용 신청
                 </button>
               )}
             </div>
