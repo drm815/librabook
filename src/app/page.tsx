@@ -7,6 +7,7 @@ interface DayReservations {
   date: string;
   dayOfWeek: string;
   periods: { periodId: string; periodName: string }[];
+  customCount: number;
 }
 
 interface SeatStatus {
@@ -75,11 +76,14 @@ export default function Home() {
         const dayReservations = Array.isArray(reservationsData)
           ? reservationsData.filter((r: { date: string }) => r.date === w.date)
           : [];
-        const reservedPeriods = dayReservations.map((r: { periodId: string }) => {
-          const period = activePeriods.find(p => p.id === r.periodId);
-          return { periodId: r.periodId, periodName: period?.name ?? '' };
-        });
-        return { date: w.date, dayOfWeek: w.dow, periods: reservedPeriods };
+        const reservedPeriods = dayReservations
+          .filter((r: { periodId: string | null }) => r.periodId)
+          .map((r: { periodId: string }) => {
+            const period = activePeriods.find(p => p.id === r.periodId);
+            return { periodId: r.periodId, periodName: period?.name ?? '' };
+          });
+        const customCount = dayReservations.filter((r: { periodId: string | null }) => !r.periodId).length;
+        return { date: w.date, dayOfWeek: w.dow, periods: reservedPeriods, customCount };
       });
       setClassReservations(weekDays);
 
@@ -195,7 +199,12 @@ export default function Home() {
                           <span className="text-xs text-gray-300">교시 없음</span>
                         )}
                       </div>
-                      {day.periods.length === 0 && (
+                      {day.customCount > 0 && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#C9B8E8] text-[#6b4fa0]">
+                          기타 {day.customCount}건
+                        </span>
+                      )}
+                      {day.periods.length === 0 && day.customCount === 0 && (
                         <span className="text-xs text-gray-300">예약 없음</span>
                       )}
                     </div>
