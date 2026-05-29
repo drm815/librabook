@@ -22,6 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/dashboard" className="text-gray-600 hover:text-[#E8899A]">대시보드</Link>
           <Link href="/admin/library-members" className="text-gray-600 hover:text-[#E8899A]">도서부</Link>
           <Link href="/admin/library-activities" className="text-gray-600 hover:text-[#E8899A]">활동기록</Link>
+          <Link href="/admin/users" className="text-gray-600 hover:text-[#E8899A]">회원관리</Link>
         </nav>
         <button
           onClick={handleLogout}
