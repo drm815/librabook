@@ -12,6 +12,10 @@ export async function POST(req: NextRequest) {
     password: string;
   } = await req.json();
 
+  if (body.role === 'student' && (!body.studentId || body.studentId.length !== 6)) {
+    return NextResponse.json({ error: '학번은 6자리로 입력해주세요.' }, { status: 400 });
+  }
+
   let dupQuery = supabase.from('users').select('id').eq('role', body.role);
   if (body.role === 'teacher') {
     dupQuery = dupQuery.eq('name', body.name).eq('subject', body.subject ?? '');

@@ -102,10 +102,11 @@ export default function LoginForm() {
           {role === 'student' && (
             <input
               type="text"
-              placeholder="학번"
+              placeholder="학번 (6자리)"
               value={studentId}
               onChange={e => { setStudentId(e.target.value); saveForm({ studentId: e.target.value }); }}
               className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#E8899A]"
+              maxLength={6}
               required
             />
           )}
