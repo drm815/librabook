@@ -33,10 +33,14 @@ export default function AdminUsersPage() {
     fetch('/api/admin/users')
       .then(r => r.json())
       .then(data => {
+        console.log('[admin/users] response:', data);
         setUsers(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(err => {
+        console.error('[admin/users] error:', err);
+        setLoading(false);
+      });
   }, []);
 
   const filtered = search.trim()
@@ -84,6 +88,7 @@ export default function AdminUsersPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="이름, 학번, 과목으로 검색..."
+          autoComplete="off"
           className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#E8899A] bg-white"
         />
       </div>
@@ -115,6 +120,7 @@ export default function AdminUsersPage() {
                 onChange={e => setNewPasswords(prev => ({ ...prev, [user.id]: e.target.value }))}
                 onKeyDown={e => e.key === 'Enter' && handleReset(user.id)}
                 placeholder="새 비밀번호 (4자 이상)"
+                autoComplete="new-password"
                 className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
               />
               <button
