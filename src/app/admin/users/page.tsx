@@ -7,6 +7,7 @@ interface UserRow {
   role: string;
   student_id: string | null;
   subject: string | null;
+  password_hash: string | null;
 }
 
 function roleLabel(role: string) {
@@ -25,23 +26,17 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [newPasswords, setNewPasswords] = useState<Record<string, string>>({});
   const [resetting, setResetting] = useState<string | null>(null);
   const [results, setResults] = useState<Record<string, { ok: boolean; msg: string }>>({});
 
-  useEffect(() => {
-    fetch('/api/admin/users')
-      .then(r => r.json())
-      .then(data => {
-        console.log('[admin/users] response:', data);
-        setUsers(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('[admin/users] error:', err);
-        setLoading(false);
-      });
-  }, []);
+  async function loadUsers() {
+    const res = await fetch('/api/admin/users');
+    const data = await res.json();
+    setUsers(Array.isArray(data) ? data : []);
+    setLoading(false);
+  }
+
+  useEffect(() => { void loadUsers(); }, []);
 
   const filtered = search.trim()
     ? users.filter(u =>
@@ -52,22 +47,18 @@ export default function AdminUsersPage() {
     : users;
 
   async function handleReset(userId: string) {
-    const pw = newPasswords[userId]?.trim();
-    if (!pw || pw.length < 4) {
-      setResults(prev => ({ ...prev, [userId]: { ok: false, msg: '4자 이상 입력하세요.' } }));
-      return;
-    }
+    if (!confirm('비밀번호를 초기화할까요?\n해당 사용자는 다음 로그인 시 새 비밀번호를 설정해야 합니다.')) return;
     setResetting(userId);
     try {
       const res = await fetch('/api/admin/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, newPassword: pw }),
+        body: JSON.stringify({ userId }),
       });
       const json = await res.json();
       if (res.ok) {
-        setResults(prev => ({ ...prev, [userId]: { ok: true, msg: '초기화 완료!' } }));
-        setNewPasswords(prev => ({ ...prev, [userId]: '' }));
+        setResults(prev => ({ ...prev, [userId]: { ok: true, msg: '초기화 완료 — 다음 로그인 시 새 비밀번호 설정' } }));
+        await loadUsers();
       } else {
         setResults(prev => ({ ...prev, [userId]: { ok: false, msg: json.error ?? '실패' } }));
       }
@@ -103,40 +94,33 @@ export default function AdminUsersPage() {
 
       <div className="space-y-3">
         {filtered.map(user => (
-          <div key={user.id} className="bg-white rounded-2xl shadow-sm px-5 py-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${roleBadgeClass(user.role)}`}>
+          <div key={user.id} className="bg-white rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${roleBadgeClass(user.role)}`}>
                 {roleLabel(user.role)}
               </span>
-              <span className="text-sm font-bold text-gray-800">{user.name}</span>
-              {user.subject && <span className="text-xs text-gray-400">{user.subject}</span>}
+              <span className="text-sm font-bold text-gray-800 truncate">{user.name}</span>
+              {user.subject && <span className="text-xs text-gray-400 truncate">{user.subject}</span>}
               {user.student_id && <span className="text-xs text-gray-400">({user.student_id})</span>}
+              {!user.password_hash && (
+                <span className="text-xs text-amber-600 font-medium shrink-0">초기화됨</span>
+              )}
             </div>
 
-            <div className="flex gap-2">
-              <input
-                type="password"
-                value={newPasswords[user.id] ?? ''}
-                onChange={e => setNewPasswords(prev => ({ ...prev, [user.id]: e.target.value }))}
-                onKeyDown={e => e.key === 'Enter' && handleReset(user.id)}
-                placeholder="새 비밀번호 (4자 이상)"
-                autoComplete="new-password"
-                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#E8899A]"
-              />
+            <div className="flex flex-col items-end gap-1 shrink-0">
               <button
                 onClick={() => handleReset(user.id)}
-                disabled={resetting === user.id}
-                className="px-4 py-2 bg-[#E8899A] text-white text-xs font-bold rounded-xl disabled:opacity-50 whitespace-nowrap hover:bg-[#e0728a] transition-colors"
+                disabled={resetting === user.id || !user.password_hash}
+                className="px-4 py-2 bg-[#E8899A] text-white text-xs font-bold rounded-xl disabled:opacity-40 whitespace-nowrap hover:bg-[#e0728a] transition-colors"
               >
-                {resetting === user.id ? '처리 중...' : '초기화'}
+                {resetting === user.id ? '처리 중...' : '비밀번호 초기화'}
               </button>
+              {results[user.id] && (
+                <p className={`text-xs ${results[user.id].ok ? 'text-green-600' : 'text-red-500'}`}>
+                  {results[user.id].msg}
+                </p>
+              )}
             </div>
-
-            {results[user.id] && (
-              <p className={`text-xs mt-1.5 ${results[user.id].ok ? 'text-green-600' : 'text-red-500'}`}>
-                {results[user.id].msg}
-              </p>
-            )}
           </div>
         ))}
       </div>

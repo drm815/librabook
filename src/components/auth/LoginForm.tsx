@@ -15,7 +15,11 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 새로고침 후 필드 복원
+  // 비번 초기화 상태
+  const [resetUserId, setResetUserId] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+
   useEffect(() => {
     const saved = sessionStorage.getItem(SESSION_KEY);
     if (saved) {
@@ -33,6 +37,7 @@ export default function LoginForm() {
     const current = saved ? JSON.parse(saved) : {};
     sessionStorage.setItem(SESSION_KEY, JSON.stringify({ ...current, ...patch }));
   }
+
   const { login } = useAuth();
   const router = useRouter();
 
@@ -44,10 +49,15 @@ export default function LoginForm() {
       const body: Record<string, string> = { role, password };
       if (role === 'teacher') { body.name = name; body.subject = subject; }
       if (role === 'student') { body.studentId = studentId; }
-      const user = await login(body);
+      const result = await login(body);
+      if (result?.resetRequired) {
+        setResetUserId(result.userId as string);
+        setLoading(false);
+        return;
+      }
       sessionStorage.removeItem(SESSION_KEY);
-      if (user.role === 'admin') router.push('/admin/timetable');
-      else if (user.role === 'student') router.push('/reserve/student');
+      if (result.role === 'admin') router.push('/admin/timetable');
+      else if (result.role === 'student') router.push('/reserve/student');
       else router.push('/timetable');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '로그인 실패');
@@ -56,13 +66,82 @@ export default function LoginForm() {
     }
   }
 
+  async function handleSetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    if (newPassword !== newPasswordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/set-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: resetUserId, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error); return; }
+      sessionStorage.removeItem(SESSION_KEY);
+      if (data.user.role === 'admin') router.push('/admin/timetable');
+      else if (data.user.role === 'student') router.push('/reserve/student');
+      else router.push('/timetable');
+    } catch {
+      setError('오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 비번 초기화 후 새 비번 설정 화면
+  if (resetUserId) {
+    return (
+      <div className="min-h-screen bg-[#FDF6F0] flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
+          <h1 className="text-2xl font-bold text-center text-[#333333] mb-2">LibraBook</h1>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-6 text-sm text-amber-800">
+            관리자에 의해 비밀번호가 초기화되었습니다.<br />새 비밀번호를 설정해주세요.
+          </div>
+          <form onSubmit={handleSetPassword} className="space-y-4">
+            <input
+              type="password"
+              placeholder="새 비밀번호 (4자 이상)"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              autoComplete="new-password"
+              minLength={4}
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#E8899A]"
+              required
+            />
+            <input
+              type="password"
+              placeholder="새 비밀번호 확인"
+              value={newPasswordConfirm}
+              onChange={e => setNewPasswordConfirm(e.target.value)}
+              autoComplete="new-password"
+              className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#E8899A]"
+              required
+            />
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#E8899A] text-white py-3 rounded-lg font-medium hover:bg-[#d4758a] transition-colors disabled:opacity-50"
+            >
+              {loading ? '설정 중...' : '비밀번호 설정'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FDF6F0] flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center text-[#333333] mb-2">LibraBook</h1>
         <p className="text-center text-sm text-gray-500 mb-6">도서관 예약 시스템</p>
 
-        {/* 역할 선택 탭 */}
         <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
           {(['teacher', 'student', 'admin'] as UserRole[]).map(r => (
             <button

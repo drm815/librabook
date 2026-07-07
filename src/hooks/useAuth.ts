@@ -71,6 +71,16 @@ export function useAuth() {
       body: JSON.stringify(body),
     });
 
+    // 비번 초기화 상태 → LoginForm에서 처리
+    if (res.ok) {
+      const data = await res.json();
+      if (data.resetRequired) return data;
+      localStorage.setItem('librabook_user', JSON.stringify(data.user));
+      setUser(data.user);
+      resetTimer();
+      return data.user;
+    }
+
     // 사용자 없음(404) + teacher/student → 자동 등록 후 재로그인
     if (res.status === 404 && body.role !== 'admin') {
       const registerBody: Record<string, string> = {
@@ -113,15 +123,8 @@ export function useAuth() {
       return data.user;
     }
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error);
-    }
-    const data = await res.json();
-    localStorage.setItem('librabook_user', JSON.stringify(data.user));
-    setUser(data.user);
-    resetTimer();
-    return data.user;
+    const err = await res.json();
+    throw new Error(err.error);
   }
 
   async function logout() {

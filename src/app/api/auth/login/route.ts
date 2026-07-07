@@ -26,6 +26,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
   }
 
+  if (!data.password_hash) {
+    return NextResponse.json({ resetRequired: true, userId: data.id }, { status: 200 });
+  }
+
   const isValid = await bcrypt.compare(password, data.password_hash);
   if (!isValid) {
     return NextResponse.json({ error: '비밀번호가 올바르지 않습니다.' }, { status: 401 });
