@@ -1,0 +1,17 @@
+{
+  "name": "LibraBook",
+  "short_name": "LibraBook",
+  "description": "중학교 도서관 수업 시간 예약 및 관리",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDF6F0",
+  "theme_color": "#F9C4D2",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

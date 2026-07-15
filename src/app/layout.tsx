@@ -8,6 +8,8 @@ const notoSansKR = Noto_Sans_KR({ subsets: ['latin'], variable: '--font-noto' })
 export const metadata: Metadata = {
   title: 'LibraBook - 도서관 예약 시스템',
   description: '중학교 도서관 수업 시간 예약 및 관리',
+  manifest: '/manifest.json',
+  icons: { icon: '/icon.svg', apple: '/icon.svg' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
