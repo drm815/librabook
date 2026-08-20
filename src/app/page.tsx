@@ -16,25 +16,25 @@ interface SeatStatus {
   total: number;
 }
 
-function getWeekDates(weekOffset: number): { date: string; dow: string }[] {
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
-  const now = new Date();
-  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const dow = kst.getUTCDay();
-  const monday = new Date(kst);
-  monday.setUTCDate(kst.getUTCDate() - (dow === 0 ? 6 : dow - 1) + weekOffset * 7);
-
-  return Array.from({ length: 5 }, (_, i) => {
-    const d = new Date(monday);
-    d.setUTCDate(monday.getUTCDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
-    return { date: dateStr, dow: days[d.getUTCDay()] };
-  });
-}
-
 function getTodayKST(): string {
   const now = new Date();
   return new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().split('T')[0];
+}
+
+function getWeekDates(weekOffset: number): { date: string; dow: string }[] {
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  const today = getTodayKST();
+  const base = new Date(today + 'T00:00:00');
+  const dow = base.getDay();
+  const monday = new Date(base);
+  monday.setDate(base.getDate() - (dow === 0 ? 6 : dow - 1) + weekOffset * 7);
+
+  return Array.from({ length: 5 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dateStr = d.toISOString().split('T')[0];
+    return { date: dateStr, dow: days[d.getDay()] };
+  });
 }
 
 export default function Home() {
