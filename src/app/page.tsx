@@ -32,7 +32,10 @@ function getWeekDates(weekOffset: number): { date: string; dow: string }[] {
   return Array.from({ length: 5 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${day}`;
     return { date: dateStr, dow: days[d.getDay()] };
   });
 }
